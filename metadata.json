@@ -1,0 +1,6 @@
+{
+  "name": "WeatherGPT",
+  "description": "Conversational AI weather and disaster-management platform for India.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
