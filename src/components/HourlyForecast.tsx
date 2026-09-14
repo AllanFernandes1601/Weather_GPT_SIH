@@ -3,9 +3,10 @@ import { HourlyForecastItem } from '../types';
 
 interface HourlyForecastProps {
   forecastItems: HourlyForecastItem[];
+  isLive?: boolean;
 }
 
-export const HourlyForecast: React.FC<HourlyForecastProps> = ({ forecastItems }) => {
+export const HourlyForecast: React.FC<HourlyForecastProps> = ({ forecastItems, isLive = true }) => {
   return (
     <section id="hourly-forecast-section" className="space-y-4">
       <div className="flex items-center justify-between">
@@ -19,7 +20,7 @@ export const HourlyForecast: React.FC<HourlyForecastProps> = ({ forecastItems })
         </div>
         <div className="hidden sm:flex items-center gap-2">
           <span className="text-[12px] text-[#6E645A] font-medium bg-[#F5F0E8] px-3 py-1 rounded-full border border-[#E5DCCF]/60">
-            Doppler Simulation • Demo Data
+            {isLive ? 'Live Open-Meteo Forecast' : 'Demo Hourly (Fallback)'}
           </span>
         </div>
       </div>

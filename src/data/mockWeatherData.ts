@@ -6,8 +6,14 @@ export const LOCATIONS: LocationData[] = [
     name: 'Bengaluru',
     state: 'Karnataka',
     coordinates: '12.97° N, 77.59° E',
+    latitude: 12.9716,
+    longitude: 77.5946,
+    isLive: false,
+    dataSource: 'Demo Data (Fallback)',
     temperature: 28,
     condition: 'Partly Cloudy',
+    weatherIcon: 'partly_cloudy_day',
+    isDay: true,
     feelsLike: 30,
     high: 31,
     low: 21,
@@ -22,8 +28,8 @@ export const LOCATIONS: LocationData[] = [
     visibility: 8,
     pressure: 1012,
     pressureTendency: 'hPa • Stable',
-    radarStation: 'Bengaluru Urban (Demo Mode)',
-    convectiveCell: 'Convective Cell: Minor',
+    radarStation: 'Not available',
+    convectiveCell: 'Not available',
     airQuality: {
       aqi: 68,
       status: 'Satisfactory',
@@ -40,7 +46,6 @@ export const LOCATIONS: LocationData[] = [
     precipitation: {
       dailyTotalMm: 4.2,
       dewPoint: 22,
-      moistureFlux: 82,
       description: 'High surface moisture conducive to rapid afternoon cloud development.'
     }
   },
@@ -49,8 +54,14 @@ export const LOCATIONS: LocationData[] = [
     name: 'Mumbai',
     state: 'Maharashtra',
     coordinates: '19.07° N, 72.87° E',
+    latitude: 19.0760,
+    longitude: 72.8777,
+    isLive: false,
+    dataSource: 'Demo Data (Fallback)',
     temperature: 31,
     condition: 'Humid & Overcast',
+    weatherIcon: 'cloud',
+    isDay: true,
     feelsLike: 36,
     high: 33,
     low: 26,
@@ -65,8 +76,8 @@ export const LOCATIONS: LocationData[] = [
     visibility: 6,
     pressure: 1008,
     pressureTendency: 'hPa • Steady',
-    radarStation: 'Coastal Zone Station (Demo Mode)',
-    convectiveCell: 'Convective Cell: Moderate',
+    radarStation: 'Not available',
+    convectiveCell: 'Not available',
     airQuality: {
       aqi: 92,
       status: 'Moderate',
@@ -83,7 +94,6 @@ export const LOCATIONS: LocationData[] = [
     precipitation: {
       dailyTotalMm: 12.8,
       dewPoint: 25,
-      moistureFlux: 91,
       description: 'Arabian sea moisture stream maintaining elevated humidity and intermittent showers.'
     }
   },
@@ -92,8 +102,14 @@ export const LOCATIONS: LocationData[] = [
     name: 'Delhi NCR',
     state: 'National Capital Region',
     coordinates: '28.61° N, 77.20° E',
+    latitude: 28.6139,
+    longitude: 77.2090,
+    isLive: false,
+    dataSource: 'Demo Data (Fallback)',
     temperature: 34,
     condition: 'Hazy Sun',
+    weatherIcon: 'wb_sunny',
+    isDay: true,
     feelsLike: 37,
     high: 36,
     low: 24,
@@ -108,8 +124,8 @@ export const LOCATIONS: LocationData[] = [
     visibility: 4,
     pressure: 1006,
     pressureTendency: 'hPa • Falling',
-    radarStation: 'Northern Plains (Demo Mode)',
-    convectiveCell: 'Convective Cell: None',
+    radarStation: 'Not available',
+    convectiveCell: 'Not available',
     airQuality: {
       aqi: 142,
       status: 'Moderate to Poor',
@@ -126,7 +142,6 @@ export const LOCATIONS: LocationData[] = [
     precipitation: {
       dailyTotalMm: 0.0,
       dewPoint: 19,
-      moistureFlux: 42,
       description: 'Dry continental air currently restricting localized precipitation.'
     }
   },
@@ -135,8 +150,14 @@ export const LOCATIONS: LocationData[] = [
     name: 'Chennai',
     state: 'Tamil Nadu',
     coordinates: '13.08° N, 80.27° E',
+    latitude: 13.0827,
+    longitude: 80.2707,
+    isLive: false,
+    dataSource: 'Demo Data (Fallback)',
     temperature: 32,
     condition: 'Scattered Clouds',
+    weatherIcon: 'partly_cloudy_day',
+    isDay: true,
     feelsLike: 38,
     high: 34,
     low: 27,
@@ -151,8 +172,8 @@ export const LOCATIONS: LocationData[] = [
     visibility: 9,
     pressure: 1010,
     pressureTendency: 'hPa • Stable',
-    radarStation: 'Coromandel Station (Demo Mode)',
-    convectiveCell: 'Convective Cell: Minor',
+    radarStation: 'Not available',
+    convectiveCell: 'Not available',
     airQuality: {
       aqi: 54,
       status: 'Satisfactory',
@@ -169,7 +190,6 @@ export const LOCATIONS: LocationData[] = [
     precipitation: {
       dailyTotalMm: 1.5,
       dewPoint: 24,
-      moistureFlux: 76,
       description: 'Evening coastal cloud condensation possible along arterial corridors.'
     }
   }

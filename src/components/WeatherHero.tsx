@@ -7,13 +7,15 @@ interface WeatherHeroProps {
   isVoiceActive: boolean;
   onToggleVoice: () => void;
   onOpenLocationModal: () => void;
+  isLoading?: boolean;
 }
 
 export const WeatherHero: React.FC<WeatherHeroProps> = ({
   location,
   isVoiceActive,
   onToggleVoice,
-  onOpenLocationModal
+  onOpenLocationModal,
+  isLoading = false
 }) => {
   return (
     <section 
@@ -34,11 +36,27 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/90 backdrop-blur-md border border-[#E5DCCF]/60 shadow-sm transition-all hover:shadow">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+                <span className={`animate-ping absolute inline-flex h-full w-full rounded-full ${
+                  isLoading
+                    ? 'bg-amber-500'
+                    : location.isLive !== false
+                    ? 'bg-emerald-500'
+                    : 'bg-amber-400'
+                } opacity-75`}></span>
+                <span className={`relative inline-flex rounded-full h-2.5 w-2.5 ${
+                  isLoading
+                    ? 'bg-amber-500'
+                    : location.isLive !== false
+                    ? 'bg-emerald-600'
+                    : 'bg-amber-500'
+                }`}></span>
               </span>
               <span className="text-[11px] uppercase tracking-wider text-[#6E645A] font-bold">
-                Live Weather • Updated 3 mins ago
+                {isLoading
+                  ? 'Refreshing Telemetry...'
+                  : location.isLive !== false
+                  ? 'Live Telemetry • Open-Meteo'
+                  : 'Demo Station • Fallback'}
               </span>
             </div>
 
@@ -67,9 +85,16 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
                 {location.temperature}°
               </span>
               <div className="flex flex-col">
-                <span className="text-[28px] sm:text-[32px] font-semibold text-[#1C1814] leading-tight">
-                  {location.condition}
-                </span>
+                <div className="flex items-center gap-2">
+                  {location.weatherIcon && (
+                    <span className="material-symbols-outlined text-[26px] text-[#B45309]">
+                      {location.weatherIcon}
+                    </span>
+                  )}
+                  <span className="text-[28px] sm:text-[32px] font-semibold text-[#1C1814] leading-tight">
+                    {location.condition}
+                  </span>
+                </div>
                 <span className="text-[15px] text-[#6E645A] mt-1 font-medium">
                   Feels like {location.feelsLike}° • High {location.high}° / Low {location.low}°
                 </span>
@@ -123,9 +148,13 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               isVoiceActive ? 'voice-active-cloud scale-105' : ''
             }`}
           >
-            {/* Ambient solar glow */}
+            {/* Ambient celestial glow: warm amber/orange for day, cool slate/silver for night */}
             <div 
-              className="absolute inset-4 rounded-full bg-gradient-to-tr from-amber-300/40 to-orange-300/40 blur-xl animate-pulse" 
+              className={`absolute inset-4 rounded-full blur-xl animate-pulse transition-all duration-700 ${
+                location.isDay !== false
+                  ? 'bg-gradient-to-tr from-amber-300/40 to-orange-300/40'
+                  : 'bg-gradient-to-tr from-slate-400/30 to-blue-400/20'
+              }`} 
               style={{ animationDuration: '5s' }}
             />
 
@@ -156,7 +185,7 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               </span>
             </div>
 
-            {/* SVG Atmospheric Sun & Translucent Cumulus Layer */}
+            {/* SVG Atmospheric Sun / Moon & Translucent Cumulus Layer */}
             <svg 
               id="atmospheric-cloud-svg"
               className="w-72 h-72 drop-shadow-xl z-10 transition-transform duration-500 hover:scale-105 cursor-pointer"
@@ -165,11 +194,31 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               xmlns="http://www.w3.org/2000/svg"
               onClick={onToggleVoice}
             >
-              {/* Golden Sun Body with breathing solar glow */}
+              {/* Celestial Body with breathing pulse (Day Sun vs Night Moon) */}
               <g className="anim-sun-pulse">
-                <circle cx="150" cy="85" fill="url(#sun-gradient)" r="46" />
-                <circle cx="150" cy="85" r="54" stroke="#EA580C" strokeOpacity="0.22" strokeWidth="2" />
-                <circle cx="150" cy="85" r="64" stroke="#EA580C" strokeDasharray="4 4" strokeOpacity="0.15" strokeWidth="1.5" />
+                <circle
+                  cx="150"
+                  cy="85"
+                  fill={location.isDay !== false ? "url(#sun-gradient)" : "url(#moon-gradient)"}
+                  r="46"
+                />
+                <circle
+                  cx="150"
+                  cy="85"
+                  r="54"
+                  stroke={location.isDay !== false ? "#EA580C" : "#64748B"}
+                  strokeOpacity="0.22"
+                  strokeWidth="2"
+                />
+                <circle
+                  cx="150"
+                  cy="85"
+                  r="64"
+                  stroke={location.isDay !== false ? "#EA580C" : "#64748B"}
+                  strokeDasharray="4 4"
+                  strokeOpacity="0.15"
+                  strokeWidth="1.5"
+                />
               </g>
 
               {/* Staggered Animated Rain Sprinkles Falling Smoothly */}
@@ -201,6 +250,10 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
                   <stop stopColor="#FFB300" />
                   <stop offset="1" stopColor="#FF7A00" />
                 </linearGradient>
+                <linearGradient id="moon-gradient" gradientUnits="userSpaceOnUse" x1="110" x2="188" y1="45" y2="125">
+                  <stop stopColor="#CBD5E1" />
+                  <stop offset="1" stopColor="#64748B" />
+                </linearGradient>
                 <linearGradient id="cloud-back" gradientUnits="userSpaceOnUse" x1="32" x2="190" y1="86" y2="168">
                   <stop stopColor="#DEE8FF" />
                   <stop offset="1" stopColor="#B0C6FF" />
@@ -213,23 +266,25 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
             </svg>
           </div>
 
-          {/* Radar sync badge with Doppler telemetry status */}
+          {/* Radar & Convective status: clear and honest indication without fabricating radar lock */}
           <div 
             id="hero-radar-badge"
-            className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#E5DCCF]/60 shadow-sm transition-all hover:shadow-md hover:border-amber-400 hover:scale-[1.02] cursor-default"
+            className="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-[#E5DCCF]/60 shadow-sm transition-all hover:shadow-md cursor-default"
           >
             <div className="relative flex items-center justify-center">
-              <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-[#D97706] opacity-60"></span>
+              {location.radarStation !== 'Not available' && (
+                <span className="animate-ping absolute inline-flex h-3 w-3 rounded-full bg-[#D97706] opacity-60"></span>
+              )}
               <span className="material-symbols-outlined text-[#B45309] text-[18px] relative">
                 satellite_alt
               </span>
             </div>
             <span className="text-[12px] sm:text-[13px] text-[#1C1814] font-semibold">
-              {location.radarStation}
+              Radar: {location.radarStation}
             </span>
-            <span className="w-1.5 h-1.5 rounded-full bg-[#D97706] animate-pulse"></span>
-            <span className="text-[11px] text-[#B45309] uppercase font-bold">
-              {location.convectiveCell}
+            <span className="w-1.5 h-1.5 rounded-full bg-[#E5DCCF]"></span>
+            <span className="text-[11px] text-[#6E645A] font-medium">
+              Convective cell: {location.convectiveCell}
             </span>
           </div>
         </div>

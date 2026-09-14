@@ -130,7 +130,7 @@ export const AlertModal: React.FC<AlertModalProps> = ({ isOpen, onClose, alert }
         {/* Footer */}
         <div className="pt-4 border-t border-[#E5DCCF] flex items-center justify-between">
           <span className="text-[11px] text-[#8E9197]">
-            Demo Weather Advisory • Ready for NDMA / Municipal API
+            Demo Weather Advisory • Configurable Municipal Alert Stream
           </span>
           <button
             type="button"

@@ -40,7 +40,7 @@ export const WeatherDetails: React.FC<WeatherDetailsProps> = ({ location }) => {
                 {location.airQuality.aqi}
               </span>
               <span className="text-[13px] text-[#6E645A] font-medium">
-                AQI • CPCB Station (Demo)
+                AQI • Atmospheric Quality Index
               </span>
             </div>
             <p className="text-[13px] text-[#6E645A] mt-1">
@@ -231,16 +231,24 @@ export const WeatherDetails: React.FC<WeatherDetailsProps> = ({ location }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between text-[11px] text-[#6E645A]">
               <span>Monsoon Moisture Flux</span>
-              <span className="font-bold text-[#B45309]">
-                {location.precipitation.moistureFlux}% High
+              <span className={`font-bold ${location.precipitation.moistureFlux !== undefined ? 'text-[#B45309]' : 'text-[#8C827A]'}`}>
+                {location.precipitation.moistureFlux !== undefined
+                  ? `${location.precipitation.moistureFlux}% High`
+                  : 'Not available'}
               </span>
             </div>
-            <div className="w-full h-2 rounded-full bg-[#F2EBE1] overflow-hidden">
-              <div
-                className="h-full bg-[#D97706] rounded-full transition-all duration-500 hover:brightness-110"
-                style={{ width: `${location.precipitation.moistureFlux}%` }}
-              />
-            </div>
+            {location.precipitation.moistureFlux !== undefined ? (
+              <div className="w-full h-2 rounded-full bg-[#F2EBE1] overflow-hidden">
+                <div
+                  className="h-full bg-[#D97706] rounded-full transition-all duration-500 hover:brightness-110"
+                  style={{ width: `${location.precipitation.moistureFlux}%` }}
+                />
+              </div>
+            ) : (
+              <p className="text-[11px] text-[#8C827A]">
+                Sensor metric not provided by Open-Meteo grid
+              </p>
+            )}
           </div>
         </div>
 

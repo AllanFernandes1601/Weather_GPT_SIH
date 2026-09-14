@@ -109,8 +109,8 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         };
       case 'weather-map':
         return {
-          title: 'Interactive Doppler & Radar Weather Map',
-          subtitle: 'Simulated high-resolution radar reflectivity, cloud albedo, and wind streamlines',
+          title: 'Interactive Precipitation & Synoptic Weather Map',
+          subtitle: 'Synoptic grid reflectivity, cloud albedo, and wind streamlines',
           icon: 'map',
           tag: 'Spatial Telemetry',
           content: (
@@ -128,7 +128,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                     <span className="material-symbols-outlined text-[32px]">satellite_alt</span>
                   </div>
                   <h4 className="text-[20px] font-bold text-white">
-                    Indian Subcontinent Doppler Radar Layer
+                    Indian Regional Synoptic Grid Projection
                   </h4>
                   <p className="text-[13px] text-gray-300">
                     Station coverage for {location.name} (12.97° N, 77.59° E). Map engine integration prepared for Leaflet / Google Maps Platform layers.

@@ -5,6 +5,12 @@ export interface LocationData {
   name: string;
   state: string;
   coordinates: string;
+  latitude?: number;
+  longitude?: number;
+  isLive?: boolean;
+  dataSource?: string;
+  isDay?: boolean;
+  weatherIcon?: string;
   temperature: number;
   condition: string;
   feelsLike: number;
@@ -39,7 +45,7 @@ export interface LocationData {
   precipitation: {
     dailyTotalMm: number;
     dewPoint: number;
-    moistureFlux: number;
+    moistureFlux?: number;
     description: string;
   };
 }
@@ -83,4 +89,13 @@ export interface SuggestedQuestion {
     timing: string;
     actionItems: string[];
   };
+}
+
+export interface RemoteLocationResult {
+  name: string;
+  state: string;
+  country: string;
+  latitude: number;
+  longitude: number;
+  displayName: string;
 }

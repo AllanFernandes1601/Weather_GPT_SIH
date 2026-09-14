@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { LocationData } from '../types';
+import { LocationData, RemoteLocationResult } from '../types';
 import { LOCATIONS } from '../data/mockWeatherData';
+import { weatherService } from '../services/weatherService';
 
 interface SearchModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectLocation: (loc: LocationData) => void;
+  onSelectRemoteLocation?: (remote: RemoteLocationResult) => void;
   onOpenAlertModal: () => void;
 }
 
@@ -13,9 +15,43 @@ export const SearchModal: React.FC<SearchModalProps> = ({
   isOpen,
   onClose,
   onSelectLocation,
+  onSelectRemoteLocation,
   onOpenAlertModal
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
+  const [remoteResults, setRemoteResults] = useState<RemoteLocationResult[]>([]);
+  const [isSearchingRemote, setIsSearchingRemote] = useState(false);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setSearchTerm('');
+      setRemoteResults([]);
+      setIsSearchingRemote(false);
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    const trimmed = searchTerm.trim();
+    if (!trimmed || trimmed.length < 2) {
+      setRemoteResults([]);
+      setIsSearchingRemote(false);
+      return;
+    }
+
+    setIsSearchingRemote(true);
+    const timer = setTimeout(async () => {
+      try {
+        const results = await weatherService.searchLocationsRemote(trimmed);
+        setRemoteResults(results);
+      } catch (err) {
+        console.warn('[SearchModal Geocode Warning]:', err);
+      } finally {
+        setIsSearchingRemote(false);
+      }
+    }, 350);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -106,38 +142,103 @@ export const SearchModal: React.FC<SearchModalProps> = ({
           </div>
 
           {/* Meteorological Stations Hit */}
-          <div>
-            <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A] px-2 block mb-2">
-              Indian Meteorological Stations ({filteredLocations.length})
-            </span>
-            <div className="space-y-1.5">
-              {filteredLocations.map((loc) => (
-                <div
-                  key={loc.id}
-                  onClick={() => {
-                    onSelectLocation(loc);
-                    onClose();
-                  }}
-                  className="p-3 rounded-xl hover:bg-[#F5F0E8] transition-colors cursor-pointer flex items-center justify-between"
-                >
-                  <div className="flex items-center gap-2.5">
-                    <span className="material-symbols-outlined text-[#B45309] text-[18px]">
-                      location_on
-                    </span>
-                    <span className="text-[13px] font-semibold text-[#1C1814]">
-                      {loc.name}, {loc.state}
-                    </span>
-                    <span className="text-[11px] text-[#6E645A] bg-[#F2EBE1] px-2 py-0.5 rounded-full">
-                      {loc.condition}
+          {filteredLocations.length > 0 && (
+            <div>
+              <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A] px-2 block mb-2">
+                Indian Meteorological Stations ({filteredLocations.length})
+              </span>
+              <div className="space-y-1.5">
+                {filteredLocations.map((loc) => (
+                  <div
+                    key={loc.id}
+                    onClick={() => {
+                      onSelectLocation(loc);
+                      onClose();
+                    }}
+                    className="p-3 rounded-xl hover:bg-[#F5F0E8] transition-colors cursor-pointer flex items-center justify-between"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[#B45309] text-[18px]">
+                        location_on
+                      </span>
+                      <span className="text-[13px] font-semibold text-[#1C1814]">
+                        {loc.name}, {loc.state}
+                      </span>
+                      <span className="text-[11px] text-[#6E645A] bg-[#F2EBE1] px-2 py-0.5 rounded-full">
+                        {loc.condition}
+                      </span>
+                    </div>
+                    <span className="text-[13px] font-bold text-[#1C1814]">
+                      {loc.temperature}°C
                     </span>
                   </div>
-                  <span className="text-[13px] font-bold text-[#1C1814]">
-                    {loc.temperature}°C
-                  </span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Dynamic Geocoded Locations */}
+          {remoteResults.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between px-2 mb-2">
+                <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+                  Geocoded Locations ({remoteResults.length})
+                </span>
+                <span className="text-[10px] text-[#B45309] font-bold uppercase bg-amber-100 px-2 py-0.5 rounded-full">
+                  Live Open-Meteo
+                </span>
+              </div>
+              <div className="space-y-1.5">
+                {remoteResults.map((rem, idx) => (
+                  <div
+                    key={`search-rem-${rem.latitude}-${rem.longitude}-${idx}`}
+                    onClick={() => {
+                      if (onSelectRemoteLocation) {
+                        onSelectRemoteLocation(rem);
+                      }
+                      onClose();
+                    }}
+                    className="p-3 rounded-xl hover:bg-[#F5F0E8] transition-colors cursor-pointer flex items-center justify-between group"
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <span className="material-symbols-outlined text-[#B45309] text-[18px]">
+                        pin_drop
+                      </span>
+                      <div>
+                        <span className="text-[13px] font-semibold text-[#1C1814] block">
+                          {rem.displayName}
+                        </span>
+                        <span className="text-[11px] text-[#6E645A]">
+                          {Math.abs(rem.latitude).toFixed(2)}° {rem.latitude >= 0 ? 'N' : 'S'}, {Math.abs(rem.longitude).toFixed(2)}° {rem.longitude >= 0 ? 'E' : 'W'}
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-[11px] font-semibold text-[#B45309] group-hover:translate-x-0.5 transition-transform flex items-center gap-1">
+                      Query Weather →
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {isSearchingRemote && (
+            <div className="p-2 text-center text-[12px] text-[#B45309] flex items-center justify-center gap-2">
+              <span className="material-symbols-outlined text-[16px] animate-spin">
+                progress_activity
+              </span>
+              <span>Searching coordinates for "{searchTerm}"...</span>
+            </div>
+          )}
+
+          {searchTerm.trim().length >= 2 &&
+            !isSearchingRemote &&
+            filteredLocations.length === 0 &&
+            remoteResults.length === 0 && (
+              <div className="py-6 text-center text-[#6E645A] text-[13px]">
+                No matching stations or locations found for "{searchTerm}"
+              </div>
+            )}
         </div>
 
         {/* Footer */}

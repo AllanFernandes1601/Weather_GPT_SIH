@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
-import { NavTab, LocationData } from './types';
+import { useState, useEffect, useCallback } from 'react';
+import { NavTab, LocationData, HourlyForecastItem, RemoteLocationResult } from './types';
 import { LOCATIONS, HOURLY_FORECAST_DATA, ACTIVE_ALERT } from './data/mockWeatherData';
+import { weatherService } from './services/weatherService';
 import { Navbar } from './components/Navbar';
 import { WeatherHero } from './components/WeatherHero';
 import { AlertCard } from './components/AlertCard';
@@ -16,10 +17,55 @@ import { PlaceholderPage } from './pages/PlaceholderPage';
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
   const [activeLocation, setActiveLocation] = useState<LocationData>(LOCATIONS[0]);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>(HOURLY_FORECAST_DATA);
+  const [isLoadingWeather, setIsLoadingWeather] = useState(false);
+  const [, setWeatherError] = useState<string | null>(null);
+
   const [isVoiceActive, setIsVoiceActive] = useState(false);
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
+
+  const [isLocatingUser, setIsLocatingUser] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  // Load live weather telemetry from Open-Meteo backend for a specific station or coordinates
+  const fetchWeatherForStation = useCallback(async (location: LocationData) => {
+    setIsLoadingWeather(true);
+    setWeatherError(null);
+
+    try {
+      let result;
+      if (location.latitude !== undefined && location.longitude !== undefined) {
+        result = await weatherService.getWeatherByCoordinates(
+          location.latitude,
+          location.longitude,
+          {
+            id: location.id,
+            name: location.name,
+            state: location.state,
+            coordinates: location.coordinates
+          }
+        );
+      } else {
+        result = await weatherService.getWeatherByLocationId(location.id);
+      }
+      setActiveLocation(result.location);
+      if (result.hourly && result.hourly.length > 0) {
+        setHourlyForecast(result.hourly);
+      }
+    } catch (err: any) {
+      console.warn('[Weather Load Warning]: Falling back to baseline data', err);
+      setWeatherError('Unable to refresh weather. Displaying offline station values.');
+    } finally {
+      setIsLoadingWeather(false);
+    }
+  }, []);
+
+  // Initial load: retrieve real Open-Meteo data for the default station (Bengaluru)
+  useEffect(() => {
+    fetchWeatherForStation(LOCATIONS[0]);
+  }, [fetchWeatherForStation]);
 
   // Global keyboard shortcut for ⌘K / Ctrl+K
   useEffect(() => {
@@ -35,6 +81,101 @@ export default function App() {
 
   const handleToggleVoice = () => {
     setIsVoiceActive((prev) => !prev);
+  };
+
+  const handleSelectLocation = (loc: LocationData) => {
+    setActiveLocation(loc);
+    fetchWeatherForStation(loc);
+  };
+
+  // Query live Open-Meteo weather for a dynamically searched geocoded location
+  const handleSelectRemoteLocation = async (remote: RemoteLocationResult) => {
+    setIsLoadingWeather(true);
+    setWeatherError(null);
+
+    try {
+      const coordStr = `${Math.abs(remote.latitude).toFixed(2)}° ${remote.latitude >= 0 ? 'N' : 'S'}, ${Math.abs(remote.longitude).toFixed(2)}° ${remote.longitude >= 0 ? 'E' : 'W'}`;
+      const stateLabel = remote.state
+        ? (remote.country && remote.country !== remote.state ? `${remote.state}, ${remote.country}` : remote.state)
+        : remote.country;
+
+      const result = await weatherService.getWeatherByCoordinates(
+        remote.latitude,
+        remote.longitude,
+        {
+          id: `geo-${remote.latitude.toFixed(4)}-${remote.longitude.toFixed(4)}`,
+          name: remote.name,
+          state: stateLabel,
+          coordinates: coordStr
+        }
+      );
+
+      setActiveLocation(result.location);
+      if (result.hourly && result.hourly.length > 0) {
+        setHourlyForecast(result.hourly);
+      }
+    } catch (err: any) {
+      console.error('[Remote Location Weather Error]:', err);
+      setWeatherError(`Failed to retrieve live weather for ${remote.name}.`);
+    } finally {
+      setIsLoadingWeather(false);
+    }
+  };
+
+  // "Use My Current Location" via HTML5 Geolocation API with reverse geocoding & Open-Meteo query
+  const handleUseCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser.');
+      return;
+    }
+
+    setIsLocatingUser(true);
+    setLocationError(null);
+
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+
+          // 1. Reverse-geocode coordinates via backend to obtain human-readable city & state
+          const geoInfo = await weatherService.reverseGeocode(latitude, longitude);
+
+          // 2. Fetch live Open-Meteo weather for coordinates
+          const result = await weatherService.getWeatherByCoordinates(latitude, longitude, {
+            name: geoInfo.name || 'Current Location',
+            state: geoInfo.state || '',
+            coordinates: `${Math.abs(latitude).toFixed(2)}° ${latitude >= 0 ? 'N' : 'S'}, ${Math.abs(longitude).toFixed(2)}° ${longitude >= 0 ? 'E' : 'W'}`
+          });
+
+          setActiveLocation(result.location);
+          if (result.hourly && result.hourly.length > 0) {
+            setHourlyForecast(result.hourly);
+          }
+          setIsLocationModalOpen(false);
+        } catch (err: any) {
+          console.error('[Current Location Weather Error]:', err);
+          setLocationError('Failed to retrieve meteorological telemetry for your location.');
+        } finally {
+          setIsLocatingUser(false);
+        }
+      },
+      (error) => {
+        console.warn('[Geolocation Permission/Access Error]:', error.message);
+        let message = 'Location access unavailable. Displaying selected station.';
+        if (error.code === error.PERMISSION_DENIED) {
+          message = 'Location permission was denied. You can select any station manually.';
+        } else if (error.code === error.TIMEOUT) {
+          message = 'Location request timed out. Please retry or pick a station.';
+        }
+        setLocationError(message);
+        setIsLocatingUser(false);
+      },
+      {
+        enableHighAccuracy: false,
+        timeout: 8000,
+        maximumAge: 60000
+      }
+    );
   };
 
   return (
@@ -60,6 +201,7 @@ export default function App() {
                 isVoiceActive={isVoiceActive}
                 onToggleVoice={handleToggleVoice}
                 onOpenLocationModal={() => setIsLocationModalOpen(true)}
+                isLoading={isLoadingWeather}
               />
 
               {/* Section 2: Severe Weather Alert Banner */}
@@ -76,7 +218,10 @@ export default function App() {
               />
 
               {/* Section 4: Today's Hourly Forecast */}
-              <HourlyForecast forecastItems={HOURLY_FORECAST_DATA} />
+              <HourlyForecast
+                forecastItems={hourlyForecast}
+                isLive={activeLocation.isLive}
+              />
 
               {/* Section 5: Detailed Weather Metrics Bento Grid */}
               <WeatherDetails location={activeLocation} />
@@ -100,13 +245,19 @@ export default function App() {
         isOpen={isLocationModalOpen}
         onClose={() => setIsLocationModalOpen(false)}
         activeLocation={activeLocation}
-        onSelectLocation={(loc) => setActiveLocation(loc)}
+        onSelectLocation={handleSelectLocation}
+        onSelectRemoteLocation={handleSelectRemoteLocation}
+        onUseCurrentLocation={handleUseCurrentLocation}
+        isLocatingUser={isLocatingUser}
+        locationError={locationError}
+        onClearLocationError={() => setLocationError(null)}
       />
 
       <SearchModal
         isOpen={isSearchModalOpen}
         onClose={() => setIsSearchModalOpen(false)}
-        onSelectLocation={(loc) => setActiveLocation(loc)}
+        onSelectLocation={handleSelectLocation}
+        onSelectRemoteLocation={handleSelectRemoteLocation}
         onOpenAlertModal={() => setIsAlertModalOpen(true)}
       />
 
@@ -122,10 +273,13 @@ export default function App() {
           <div className="flex items-center gap-2">
             <span className="font-bold text-[#1C1814]">WeatherGPT</span>
             <span>•</span>
-            <span>Smart India Hackathon Prototype</span>
+            <span>Smart India Hackathon</span>
           </div>
           <div className="flex items-center gap-4 text-[12px]">
-            <span className="text-[#8E9197]">Demo weather data • Sources will be connected</span>
+            <span className="text-[#8E9197] inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              Powered by Open-Meteo Weather API
+            </span>
             <button
               type="button"
               onClick={() => setCurrentTab('safety')}
@@ -139,4 +293,3 @@ export default function App() {
     </div>
   );
 }
-

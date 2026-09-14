@@ -88,7 +88,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               ? 'bg-amber-100 border-amber-500 ring-2 ring-amber-400/40'
               : 'bg-white/90 border-[#B45309]/30 hover:border-[#B45309]'
           }`}
-          title="Click to toggle Doppler Voice Link"
+          title="Click to toggle Voice Link"
         >
           <div className="flex items-center gap-1.5">
             <span className="relative flex h-2.5 w-2.5">
@@ -96,7 +96,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#D97706]"></span>
             </span>
             <span className="text-[11px] font-bold uppercase text-[#B45309] tracking-wide">
-              {isVoiceActive ? 'Voice Link: Online' : 'Cloud Voice Link: Doppler Synced'}
+              {isVoiceActive ? 'Voice Link: Online' : 'Cloud Voice Link: Synoptic Stream'}
             </span>
           </div>
           <span className="h-3.5 w-px bg-[#E5DCCF]" />
@@ -195,7 +195,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               </span>
             </div>
             <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase">
-              <span>Doppler Cloud Beam Active</span>
+              <span>Synoptic Cloud Stream Active</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
           </div>
