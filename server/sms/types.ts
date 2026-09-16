@@ -73,6 +73,7 @@ export interface SmsDeliveryRecord {
   id: string;
   subscriptionId: string;
   alertId: string;
+  alertAreaKey: string;
   alertType: SmsAlertType;
   severity: AlertSeverity;
   phoneMasked: string;

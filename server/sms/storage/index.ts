@@ -1,17 +1,28 @@
-import { ISmsSubscriptionStorage } from './storage.interface';
-import { JsonFileSubscriptionStorage } from './jsonFileStorage';
+import { ISmsSubscriptionStorage, ISmsDeliveryStorage } from './storage.interface';
+import { JsonFileSubscriptionStorage, JsonFileDeliveryStorage } from './jsonFileStorage';
 
 export * from './storage.interface';
 export * from './jsonFileStorage';
 
-let defaultStorage: ISmsSubscriptionStorage | null = null;
+let defaultSubscriptionStorage: ISmsSubscriptionStorage | null = null;
+let defaultDeliveryStorage: ISmsDeliveryStorage | null = null;
 
 /**
  * Returns the active ISmsSubscriptionStorage instance.
  */
 export function getSubscriptionStorage(): ISmsSubscriptionStorage {
-  if (!defaultStorage) {
-    defaultStorage = new JsonFileSubscriptionStorage();
+  if (!defaultSubscriptionStorage) {
+    defaultSubscriptionStorage = new JsonFileSubscriptionStorage();
   }
-  return defaultStorage;
+  return defaultSubscriptionStorage;
+}
+
+/**
+ * Returns the active ISmsDeliveryStorage instance.
+ */
+export function getDeliveryStorage(): ISmsDeliveryStorage {
+  if (!defaultDeliveryStorage) {
+    defaultDeliveryStorage = new JsonFileDeliveryStorage();
+  }
+  return defaultDeliveryStorage;
 }

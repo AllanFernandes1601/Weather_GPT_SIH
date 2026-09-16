@@ -1,9 +1,10 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { SmsSubscription } from '../types';
+import { SmsSubscription, SmsDeliveryRecord, SmsAlertType } from '../types';
 import {
   ISmsSubscriptionStorage,
+  ISmsDeliveryStorage,
   CreateSubscriptionInput,
   UpdateSubscriptionInput
 } from './storage.interface';
@@ -188,6 +189,117 @@ export class JsonFileSubscriptionStorage implements ISmsSubscriptionStorage {
 
       await this.writeRawRecords(records);
       return true;
+    });
+  }
+}
+
+/**
+ * JSON file-based delivery audit record storage.
+ *
+ * Guarantees:
+ * - Writes to data/sms_deliveries.json
+ * - Atomic temp file write + rename
+ * - Serialized write queue
+ * - Never stores full phone numbers (SmsDeliveryRecord uses phoneMasked exclusively)
+ */
+export class JsonFileDeliveryStorage implements ISmsDeliveryStorage {
+  private readonly filePath: string;
+  private readonly dataDir: string;
+  private writeQueue: Promise<unknown> = Promise.resolve();
+
+  constructor(customFilePath?: string) {
+    this.filePath = customFilePath || path.join(process.cwd(), 'data', 'sms_deliveries.json');
+    this.dataDir = path.dirname(this.filePath);
+  }
+
+  private runExclusive<T>(operation: () => Promise<T>): Promise<T> {
+    const next = this.writeQueue.then(operation, operation);
+    this.writeQueue = next;
+    return next;
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    await fs.mkdir(this.dataDir, { recursive: true });
+    try {
+      await fs.access(this.filePath);
+    } catch {
+      await this.writeRawRecords([]);
+    }
+  }
+
+  private async readRawRecords(): Promise<SmsDeliveryRecord[]> {
+    await this.ensureInitialized();
+    try {
+      const content = await fs.readFile(this.filePath, 'utf-8');
+      const trimmed = content.trim();
+      if (!trimmed) return [];
+      const parsed = JSON.parse(trimmed);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (err: any) {
+      if (err.code === 'ENOENT') return [];
+      console.error('[JsonFileDeliveryStorage] Error reading deliveries, fallback empty:', err.message);
+      return [];
+    }
+  }
+
+  private async writeRawRecords(records: SmsDeliveryRecord[]): Promise<void> {
+    await fs.mkdir(this.dataDir, { recursive: true });
+    const tmpPath = `${this.filePath}.${Date.now()}.${randomUUID().slice(0, 8)}.tmp`;
+    const dataString = JSON.stringify(records, null, 2);
+
+    try {
+      await fs.writeFile(tmpPath, dataString, 'utf-8');
+      try {
+        await fs.rename(tmpPath, this.filePath);
+      } catch (renameErr: any) {
+        if (renameErr.code === 'EEXIST' || renameErr.code === 'EPERM') {
+          await fs.unlink(this.filePath).catch(() => {});
+          await fs.rename(tmpPath, this.filePath);
+        } else {
+          throw renameErr;
+        }
+      }
+    } finally {
+      await fs.unlink(tmpPath).catch(() => {});
+    }
+  }
+
+  async recordDelivery(record: SmsDeliveryRecord): Promise<void> {
+    await this.runExclusive(async () => {
+      const records = await this.readRawRecords();
+      records.push(record);
+      await this.writeRawRecords(records);
+    });
+  }
+
+  async getRecentDeliveriesForSubscription(
+    subscriptionId: string,
+    alertType?: SmsAlertType,
+    windowMs?: number
+  ): Promise<SmsDeliveryRecord[]> {
+    return this.runExclusive(async () => {
+      const records = await this.readRawRecords();
+      const now = Date.now();
+
+      return records.filter((r) => {
+        if (r.subscriptionId !== subscriptionId) return false;
+        if (alertType && r.alertType !== alertType) return false;
+        if (windowMs !== undefined && windowMs > 0) {
+          const sentTime = new Date(r.sentAt).getTime();
+          if (isNaN(sentTime) || now - sentTime > windowMs) return false;
+        }
+        return true;
+      });
+    });
+  }
+
+  async getAllDeliveries(limit?: number): Promise<SmsDeliveryRecord[]> {
+    return this.runExclusive(async () => {
+      const records = await this.readRawRecords();
+      if (limit !== undefined && limit > 0) {
+        return records.slice(-limit);
+      }
+      return records;
     });
   }
 }
