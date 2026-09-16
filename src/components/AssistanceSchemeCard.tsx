@@ -24,6 +24,29 @@ function formatScope(scope: GovernmentAssistanceScheme['scope']): string {
   return `${scope.charAt(0).toUpperCase()}${scope.slice(1)} scheme`;
 }
 
+function formatAssistanceType(type: GovernmentAssistanceScheme['assistanceType']): string {
+  if (type === 'disaster_relief') return 'Disaster relief pathway';
+  if (type === 'insurance') return 'Insurance scheme';
+  if (type === 'welfare') return 'Government information pathway';
+  return 'Government scheme';
+}
+
+function statusLabel(scheme: GovernmentAssistanceScheme, status: EligibilityResult['status']): string {
+  if (scheme.assistanceType === 'disaster_relief' && status !== 'NOT_ELIGIBLE') {
+    return 'Relief may be available through your State/District administration';
+  }
+  if (scheme.actionType === 'official_information' && status !== 'NOT_ELIGIBLE') {
+    return 'Check official assistance options';
+  }
+  return STATUS_LABELS[status];
+}
+
+function actionLabel(scheme: GovernmentAssistanceScheme): string {
+  if (scheme.actionType === 'contact_authority') return 'View official authority information';
+  if (scheme.actionType === 'official_information') return 'Find schemes on myScheme';
+  return 'View / Apply on Official Website';
+}
+
 export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ scheme, result }) => (
   <article className="rounded-3xl border border-[#E5DCCF] bg-white p-5 shadow-sm sm:p-6">
     <div className="flex flex-col gap-4 border-b border-[#E5DCCF]/70 pb-5 sm:flex-row sm:items-start sm:justify-between">
@@ -42,14 +65,14 @@ export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ sche
         <span className="material-symbols-outlined text-[16px]">
           {result.status === 'ELIGIBLE' ? 'check_circle' : result.status === 'NOT_ELIGIBLE' ? 'cancel' : 'info'}
         </span>
-        {STATUS_LABELS[result.status]}
+        {statusLabel(scheme, result.status)}
       </span>
     </div>
 
     <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-5">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E9197]">About this scheme</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E9197]">{formatAssistanceType(scheme.assistanceType)}</p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-[#6E645A]">{scheme.description}</p>
           <p className="mt-2 text-[12px] font-semibold text-[#6E645A]">Scope: {formatScope(scheme.scope)}</p>
         </div>
@@ -129,7 +152,7 @@ export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ sche
             rel="noopener noreferrer"
             className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#D97706] px-4 py-3 text-center text-[12px] font-bold text-white shadow-md shadow-amber-600/20 transition hover:bg-[#B45309]"
           >
-            View / Apply on Official Website
+            {actionLabel(scheme)}
             <span className="material-symbols-outlined text-[17px]">open_in_new</span>
           </a>
           <a

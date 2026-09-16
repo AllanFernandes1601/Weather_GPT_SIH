@@ -38,11 +38,14 @@ export type OccupationType =
   | 'employed'
   | 'student'
   | 'retired'
-  | 'other';
+  | 'other'
+  | 'unknown';
 
-export type FarmerStatus = 'farmer' | 'tenant_farmer' | 'sharecropper' | 'not_farmer';
+export type FarmerStatus = 'farmer' | 'tenant_farmer' | 'sharecropper' | 'not_farmer' | 'unknown';
 export type CropInsuranceStatus = 'insured' | 'not_insured' | 'unknown';
 export type CropNotifiedStatus = 'notified' | 'not_notified' | 'unknown';
+export type FisherStatus = 'fisher' | 'fisheries_worker' | 'not_fisher' | 'unknown';
+export type HouseDamageLevel = 'none' | 'partial' | 'severe' | 'destroyed' | 'unknown';
 
 export interface AssistanceUserProfile {
   incidentType?: IncidentType | IncidentType[];
@@ -61,6 +64,13 @@ export interface AssistanceUserProfile {
   annualHouseholdIncome?: number;
   notifiedAreaStatus?: 'notified' | 'not_notified' | 'unknown';
   coveredPerilStatus?: 'covered' | 'not_covered' | 'unknown';
+  displacedFromHome?: boolean | 'unknown';
+  houseDamageLevel?: HouseDamageLevel;
+  essentialHouseholdLoss?: boolean | 'unknown';
+  disasterRelatedInjury?: boolean | 'unknown';
+  dailyWageWorker?: boolean | 'unknown';
+  selfEmployed?: boolean | 'unknown';
+  fisherStatus?: FisherStatus;
 }
 
 export type AssistanceProfileField = keyof AssistanceUserProfile;
@@ -108,6 +118,8 @@ export interface GovernmentAssistanceScheme {
   description: string;
   authority: string;
   scope: 'national' | 'state' | 'district';
+  assistanceType: 'scheme' | 'disaster_relief' | 'insurance' | 'welfare';
+  actionType: 'apply' | 'check_eligibility' | 'official_information' | 'contact_authority';
   applicableStates: readonly string[];
   applicableIncidents: readonly IncidentType[];
   applicableImpacts: readonly ImpactType[];

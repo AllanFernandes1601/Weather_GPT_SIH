@@ -71,7 +71,7 @@ export const AssistanceResults: React.FC<AssistanceResultsProps> = ({
             <div>
               <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#B45309]">Assistance Finder</p>
               <h2 className="mt-1 text-[24px] font-bold leading-tight tracking-tight text-[#1C1814] sm:text-[28px]">Assistance results</h2>
-              <p className="mt-1 text-[13px] leading-relaxed text-[#6E645A] sm:text-[14px]">Government programs that match the incident information provided.</p>
+              <p className="mt-1 text-[13px] leading-relaxed text-[#6E645A] sm:text-[14px]">Government schemes, disaster-relief pathways, and official information options related to the incident.</p>
             </div>
           </div>
           {onBack && (

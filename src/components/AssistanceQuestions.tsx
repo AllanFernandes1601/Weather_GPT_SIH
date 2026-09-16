@@ -10,11 +10,22 @@ interface AssistanceQuestionsProps {
 }
 
 type QuestionField =
+  | 'state'
+  | 'occupation'
   | 'farmerStatus'
   | 'cropInsuranceStatus'
   | 'cropNotifiedStatus'
   | 'notifiedAreaStatus'
-  | 'coveredPerilStatus';
+  | 'coveredPerilStatus'
+  | 'houseDamageLevel'
+  | 'displacedFromHome'
+  | 'essentialHouseholdLoss'
+  | 'disasterRelatedInjury'
+  | 'livelihoodLoss'
+  | 'businessDamage'
+  | 'dailyWageWorker'
+  | 'fisherStatus'
+  | 'agriculturalLandAffected';
 
 type QuestionOption = {
   label: string;
@@ -26,19 +37,46 @@ interface AssistanceQuestionDefinition {
   engineLabel: string;
   question: string;
   supportingText: string;
-  options: readonly QuestionOption[];
+  inputType: 'text' | 'choice';
+  options?: readonly QuestionOption[];
+  placeholder?: string;
 }
 
 const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
+  {
+    field: 'state',
+    engineLabel: 'state',
+    question: 'Which state or Union Territory did the incident occur in?',
+    supportingText: 'This helps identify the responsible local authority or relevant government programs.',
+    inputType: 'text',
+    placeholder: 'For example, Karnataka'
+  },
+  {
+    field: 'occupation',
+    engineLabel: 'occupation',
+    question: 'What best describes your work?',
+    supportingText: 'Choose the closest description for the work affected by the disaster.',
+    inputType: 'choice',
+    options: [
+      { label: 'Worker', value: 'worker' },
+      { label: 'Self-employed', value: 'self_employed' },
+      { label: 'Business owner', value: 'business_owner' },
+      { label: 'Farmer', value: 'farmer' },
+      { label: 'Fisher', value: 'fisher' },
+      { label: 'Other', value: 'other' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
   {
     field: 'farmerStatus',
     engineLabel: 'farmer status',
     question: 'Are you a farmer or cultivator of the affected crop?',
     supportingText: 'This includes tenant farmers and sharecroppers where applicable.',
+    inputType: 'choice',
     options: [
       { label: 'Yes', value: 'farmer' },
       { label: 'No', value: 'not_farmer' },
-      { label: 'Not sure', value: undefined }
+      { label: 'Not sure', value: 'unknown' }
     ]
   },
   {
@@ -46,6 +84,7 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
     engineLabel: 'crop insurance status',
     question: 'Was the affected crop insured under PMFBY?',
     supportingText: 'Choose Not sure if you do not know whether a policy was active.',
+    inputType: 'choice',
     options: [
       { label: 'Yes', value: 'insured' },
       { label: 'No', value: 'not_insured' },
@@ -57,6 +96,7 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
     engineLabel: 'whether the crop is notified',
     question: 'Was the crop notified for the relevant area and season?',
     supportingText: 'Notification depends on the applicable state, area, crop, and season.',
+    inputType: 'choice',
     options: [
       { label: 'Yes', value: 'notified' },
       { label: 'No', value: 'not_notified' },
@@ -68,6 +108,7 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
     engineLabel: 'whether the land is in a notified area or insurance unit',
     question: 'Was the affected land in a notified area or insurance unit?',
     supportingText: 'Use Not sure if you cannot confirm the notified unit for the incident.',
+    inputType: 'choice',
     options: [
       { label: 'Yes', value: 'notified' },
       { label: 'No', value: 'not_notified' },
@@ -79,9 +120,121 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
     engineLabel: 'whether the reported peril is covered',
     question: 'Do you know whether this loss is covered under the applicable PMFBY terms?',
     supportingText: 'Coverage depends on the notified risk and the applicable scheme terms.',
+    inputType: 'choice',
     options: [
       { label: 'Yes', value: 'covered' },
       { label: 'No', value: 'not_covered' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'houseDamageLevel',
+    engineLabel: 'house damage level',
+    question: 'How badly was the home damaged?',
+    supportingText: 'Choose the closest description without sharing an exact address.',
+    inputType: 'choice',
+    options: [
+      { label: 'None', value: 'none' },
+      { label: 'Partial', value: 'partial' },
+      { label: 'Severe', value: 'severe' },
+      { label: 'Destroyed', value: 'destroyed' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'displacedFromHome',
+    engineLabel: 'displacement status',
+    question: 'Were you displaced from your home?',
+    supportingText: 'Do not enter an address; this is only about whether you had to leave home.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'essentialHouseholdLoss',
+    engineLabel: 'essential household loss',
+    question: 'Were essential household items lost or damaged?',
+    supportingText: 'Answer only about essential household loss caused by this disaster.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'disasterRelatedInjury',
+    engineLabel: 'disaster-related injury',
+    question: 'Did anyone experience an injury related to this disaster?',
+    supportingText: 'No medical or graphic details are needed here.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'livelihoodLoss',
+    engineLabel: 'livelihood loss',
+    question: 'Was your livelihood interrupted by the disaster?',
+    supportingText: 'This includes lost work, daily-wage disruption, or self-employment disruption.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'businessDamage',
+    engineLabel: 'business damage',
+    question: 'Was your business or shop damaged by the disaster?',
+    supportingText: 'No business registration or financial account details are needed.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'dailyWageWorker',
+    engineLabel: 'daily-wage work status',
+    question: 'Are you a daily-wage worker?',
+    supportingText: 'This helps describe the type of livelihood disruption.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'fisherStatus',
+    engineLabel: 'fisher status',
+    question: 'Are you a fisher or fisheries worker?',
+    supportingText: 'This is used only to route fisheries-related disaster information.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: 'fisher' },
+      { label: 'Yes, fisheries worker', value: 'fisheries_worker' },
+      { label: 'No', value: 'not_fisher' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'agriculturalLandAffected',
+    engineLabel: 'agricultural land affected',
+    question: 'Was agricultural land or production affected?',
+    supportingText: 'This helps separate agriculture relief from household or property relief.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
       { label: 'Not sure', value: 'unknown' }
     ]
   }
@@ -105,8 +258,16 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
 
   const handleAnswer = (field: QuestionField, value: string | boolean | undefined) => {
     switch (field) {
+      case 'state':
+        if (typeof value === 'string') onChange({ ...profile, state: value.trim() || undefined });
+        break;
+      case 'occupation':
+        if (value === 'worker' || value === 'self_employed' || value === 'business_owner' || value === 'farmer' || value === 'fisher' || value === 'other' || value === 'unknown') {
+          onChange({ ...profile, occupation: value });
+        }
+        break;
       case 'farmerStatus':
-        if (value === undefined || value === 'farmer' || value === 'not_farmer') {
+        if (value === undefined || value === 'farmer' || value === 'not_farmer' || value === 'unknown') {
           onChange({ ...profile, farmerStatus: value });
         }
         break;
@@ -129,6 +290,37 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
         if (value === undefined || value === 'covered' || value === 'not_covered' || value === 'unknown') {
           onChange({ ...profile, coveredPerilStatus: value });
         }
+        break;
+      case 'houseDamageLevel':
+        if (value === 'none' || value === 'partial' || value === 'severe' || value === 'destroyed' || value === 'unknown') {
+          onChange({ ...profile, houseDamageLevel: value });
+        }
+        break;
+      case 'displacedFromHome':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, displacedFromHome: value });
+        break;
+      case 'essentialHouseholdLoss':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, essentialHouseholdLoss: value });
+        break;
+      case 'disasterRelatedInjury':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, disasterRelatedInjury: value });
+        break;
+      case 'livelihoodLoss':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, livelihoodLoss: value });
+        break;
+      case 'businessDamage':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, businessDamage: value });
+        break;
+      case 'dailyWageWorker':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, dailyWageWorker: value });
+        break;
+      case 'fisherStatus':
+        if (value === 'fisher' || value === 'fisheries_worker' || value === 'not_fisher' || value === 'unknown') {
+          onChange({ ...profile, fisherStatus: value });
+        }
+        break;
+      case 'agriculturalLandAffected':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, agriculturalLandAffected: value });
         break;
     }
   };
@@ -163,18 +355,28 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
                   {question.question}
                 </legend>
                 <p className="mt-1 text-[12px] leading-relaxed text-[#6E645A]">{question.supportingText}</p>
-                <div className="mt-4 grid grid-cols-3 gap-2.5">
-                  {question.options.map(option => (
-                    <button
-                      key={option.label}
-                      type="button"
-                      onClick={() => handleAnswer(question.field, option.value)}
-                      className="rounded-2xl border border-[#E5DCCF] bg-[#FFFDF9] px-2 py-3 text-[12px] font-semibold text-[#6E645A] transition hover:border-[#D97706] hover:bg-amber-50 hover:text-[#1C1814] active:scale-[0.98] sm:px-4 sm:text-[13px]"
-                    >
-                      {option.label}
-                    </button>
-                  ))}
-                </div>
+                {question.inputType === 'text' ? (
+                  <input
+                    type="text"
+                    value={typeof profile[question.field] === 'string' ? profile[question.field] as string : ''}
+                    onChange={event => handleAnswer(question.field, event.target.value)}
+                    placeholder={question.placeholder}
+                    className="mt-4 w-full rounded-2xl border-2 border-[#E5DCCF] bg-[#FFFDF9] px-4 py-3 text-[13px] text-[#1C1814] outline-none transition focus:border-[#B45309] focus:ring-4 focus:ring-[#B45309]/15"
+                  />
+                ) : (
+                  <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
+                    {question.options?.map(option => (
+                      <button
+                        key={option.label}
+                        type="button"
+                        onClick={() => handleAnswer(question.field, option.value)}
+                        className="rounded-2xl border border-[#E5DCCF] bg-[#FFFDF9] px-2 py-3 text-[12px] font-semibold text-[#6E645A] transition hover:border-[#D97706] hover:bg-amber-50 hover:text-[#1C1814] active:scale-[0.98] sm:px-4 sm:text-[13px]"
+                      >
+                        {option.label}
+                      </button>
+                    ))}
+                  </div>
+                )}
               </fieldset>
             ))}
           </div>

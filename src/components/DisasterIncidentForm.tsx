@@ -34,6 +34,11 @@ const TEXT_IMPACT_MATCHERS: readonly { keywords: readonly string[]; impacts: Imp
   { keywords: ['crop', 'crops', 'rice', 'wheat', 'harvest'], impacts: ['crop_damage'] },
   { keywords: ['farm', 'farmland', 'field', 'fields'], impacts: ['agricultural_land_damage'] },
   { keywords: ['house', 'home'], impacts: ['house_damage'] },
+  { keywords: ['property', 'belongings', 'household items'], impacts: ['property_damage'] },
+  { keywords: ['displaced', 'evacuated', 'left home'], impacts: ['displacement'] },
+  { keywords: ['injury', 'injured', 'hurt'], impacts: ['injury'] },
+  { keywords: ['livestock', 'cattle', 'animals'], impacts: ['livestock_loss'] },
+  { keywords: ['fishery', 'fisheries', 'fishing equipment', 'boat', 'nets'], impacts: ['fishing_equipment_damage'] },
   { keywords: ['business', 'shop', 'store'], impacts: ['business_damage'] },
   { keywords: ['job', 'work', 'livelihood', 'income'], impacts: ['livelihood_loss', 'employment_loss'] }
 ];

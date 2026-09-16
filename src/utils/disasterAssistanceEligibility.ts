@@ -24,11 +24,22 @@ const INCIDENT_KEYWORDS: Readonly<Record<IncidentType, readonly string[]>> = {
 };
 
 const PROFILE_LABELS: Readonly<Partial<Record<AssistanceProfileField, string>>> = {
+  state: 'state',
+  occupation: 'occupation',
   farmerStatus: 'farmer status',
   cropInsuranceStatus: 'crop insurance status',
   cropNotifiedStatus: 'whether the crop is notified',
   notifiedAreaStatus: 'whether the land is in a notified area or insurance unit',
-  coveredPerilStatus: 'whether the reported peril is covered'
+  coveredPerilStatus: 'whether the reported peril is covered',
+  houseDamageLevel: 'house damage level',
+  displacedFromHome: 'displacement status',
+  essentialHouseholdLoss: 'essential household loss',
+  disasterRelatedInjury: 'disaster-related injury',
+  livelihoodLoss: 'livelihood loss',
+  businessDamage: 'business damage',
+  dailyWageWorker: 'daily-wage work status',
+  fisherStatus: 'fisher status',
+  agriculturalLandAffected: 'agricultural land affected'
 };
 
 export function normalizeIncident(input: string | IncidentType | null | undefined): IncidentType[] {
@@ -60,7 +71,9 @@ export function getCandidateSchemes(
     const incidentMatch = incidents.some(incident => scheme.applicableIncidents.includes(incident));
     const impactMatch = impacts.some(impact => scheme.applicableImpacts.includes(impact));
     const occupationMatch = occupation ? scheme.applicableOccupations.includes(occupation) : false;
-    return incidentMatch || impactMatch || occupationMatch;
+    if (!incidentMatch) return false;
+    if (scheme.applicableImpacts.length === 0) return true;
+    return impactMatch && (scheme.applicableOccupations.length === 0 || occupationMatch || !occupation);
   });
 }
 
@@ -89,7 +102,7 @@ function evaluateRule(
   const value = readField(profile, rule.field);
   const label = PROFILE_LABELS[rule.field] || rule.field;
 
-  if (value === undefined || value === null || value === '') {
+  if (value === undefined || value === null || value === '' || value === 'unknown') {
     return { missing: `Provide ${label}.` };
   }
 
