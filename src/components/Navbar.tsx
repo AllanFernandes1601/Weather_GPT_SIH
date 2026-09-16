@@ -69,6 +69,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
           <button
             type="button"
+            onClick={() => onSelectTab('risks')}
+            className={`px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+              currentTab === 'risks'
+                ? 'bg-[#D97706] text-white shadow-[0_2px_8px_rgba(217,119,6,0.25)]'
+                : 'text-[#6E645A] hover:bg-[#E8DEC8] hover:text-[#1C1814]'
+            }`}
+          >
+            <span>Risks</span>
+            <span className="material-symbols-outlined text-[15px]">crisis_alert</span>
+          </button>
+          <button
+            type="button"
             onClick={() => onSelectTab('alerts')}
             className={`relative px-4 py-1.5 rounded-full text-[13px] font-semibold transition-all duration-200 flex items-center gap-1.5 ${
               currentTab === 'alerts'
@@ -204,11 +216,11 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Mobile Nav Tabs Bar */}
-      <div className="lg:hidden flex items-center justify-around border-t border-[#E5DCCF]/50 px-3 py-2 bg-[#FAF8F5]/95">
+      <div className="lg:hidden flex items-center justify-start gap-1 overflow-x-auto no-scrollbar border-t border-[#E5DCCF]/50 px-3 py-2 bg-[#FAF8F5]/95">
         <button
           type="button"
           onClick={() => onSelectTab('home')}
-          className={`px-3 py-1 rounded-full text-[12px] font-semibold ${
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold shrink-0 ${
             currentTab === 'home' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
           }`}
         >
@@ -217,7 +229,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('forecast')}
-          className={`px-3 py-1 rounded-full text-[12px] font-semibold ${
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold shrink-0 ${
             currentTab === 'forecast' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
           }`}
         >
@@ -225,8 +237,17 @@ export const Navbar: React.FC<NavbarProps> = ({
         </button>
         <button
           type="button"
+          onClick={() => onSelectTab('risks')}
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold shrink-0 ${
+            currentTab === 'risks' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
+          }`}
+        >
+          Risks
+        </button>
+        <button
+          type="button"
           onClick={() => onSelectTab('alerts')}
-          className={`px-3 py-1 rounded-full text-[12px] font-semibold flex items-center gap-1 ${
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold flex items-center gap-1 shrink-0 ${
             currentTab === 'alerts' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
           }`}
         >
@@ -236,7 +257,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('weather-map')}
-          className={`px-3 py-1 rounded-full text-[12px] font-semibold ${
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold shrink-0 ${
             currentTab === 'weather-map' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
           }`}
         >
@@ -245,7 +266,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         <button
           type="button"
           onClick={() => onSelectTab('safety')}
-          className={`px-3 py-1 rounded-full text-[12px] font-semibold ${
+          className={`px-3 py-1 rounded-full text-[12px] font-semibold shrink-0 ${
             currentTab === 'safety' ? 'bg-[#D97706] text-white' : 'text-[#6E645A]'
           }`}
         >
