@@ -11,30 +11,53 @@ export interface AIResponse {
   sources: string[];
 }
 
+export interface WeatherGPTLiveWeather {
+  source?: string;
+  isLive?: boolean;
+  condition: string;
+  temperatureC: number;
+  feelsLikeC: number;
+  highC: number;
+  lowC: number;
+  humidityPercent: number;
+  windSpeedKmh: number;
+  windDirection: string;
+  windGustsKmh: number;
+  uvIndex: number;
+  visibilityKm: number;
+  pressureHpa: number;
+  precipitationMm: number;
+  rainPrediction?: LocationData['rainPrediction'];
+}
+
+export function buildWeatherGPTLiveWeather(location: LocationData): WeatherGPTLiveWeather {
+  return {
+    source: location.dataSource,
+    isLive: location.isLive,
+    condition: location.condition,
+    temperatureC: location.temperature,
+    feelsLikeC: location.feelsLike,
+    highC: location.high,
+    lowC: location.low,
+    humidityPercent: location.humidity,
+    windSpeedKmh: location.windSpeed,
+    windDirection: location.windDirection,
+    windGustsKmh: location.windGusts,
+    uvIndex: location.uvIndex,
+    visibilityKm: location.visibility,
+    pressureHpa: location.pressure,
+    precipitationMm: location.precipitation.dailyTotalMm,
+    rainPrediction: location.rainPrediction
+  };
+}
+
 export const aiWeatherService = {
   async askWeatherGPT(
     prompt: string,
     location: LocationData,
     hourlyForecast: HourlyForecastItem[]
   ): Promise<AIResponse> {
-    const liveWeather = {
-      source: location.dataSource,
-      isLive: location.isLive,
-      condition: location.condition,
-      temperatureC: location.temperature,
-      feelsLikeC: location.feelsLike,
-      highC: location.high,
-      lowC: location.low,
-      humidityPercent: location.humidity,
-      windSpeedKmh: location.windSpeed,
-      windDirection: location.windDirection,
-      windGustsKmh: location.windGusts,
-      uvIndex: location.uvIndex,
-      visibilityKm: location.visibility,
-      pressureHpa: location.pressure,
-      precipitationMm: location.precipitation.dailyTotalMm,
-      rainPrediction: location.rainPrediction
-    };
+    const liveWeather = buildWeatherGPTLiveWeather(location);
     const response = await fetch('/api/ai/weather', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

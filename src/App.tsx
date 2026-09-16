@@ -14,6 +14,7 @@ import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
+import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -22,6 +23,22 @@ export default function App() {
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [, setWeatherError] = useState<string | null>(null);
 
+  const voiceContext = {
+    locationName: activeLocation.name,
+    stateName: activeLocation.state,
+    coordinates: activeLocation.coordinates,
+    latitude: activeLocation.latitude,
+    longitude: activeLocation.longitude,
+    liveWeather: buildWeatherGPTLiveWeather(activeLocation) as unknown as Record<string, unknown>,
+    hourlyForecast: hourlyForecast.slice(0, 48).map((item) => ({
+      time: item.forecastTime || item.time,
+      temperatureC: item.temperature,
+      condition: item.condition,
+      rainProbabilityPercent: item.rainProbability
+    })),
+    alert: ACTIVE_ALERT as unknown as Record<string, unknown>
+  };
+
   const {
     isVoiceActive,
     voiceError,
@@ -29,8 +46,9 @@ export default function App() {
     clearVoiceError,
     diagnostics,
     liveState,
-    liveTranscript
-  } = useVoiceCapture();
+    liveTranscript,
+    playbackState
+  } = useVoiceCapture(voiceContext);
 
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
@@ -230,6 +248,7 @@ export default function App() {
                 diagnostics={diagnostics}
                 liveState={liveState}
                 liveTranscript={liveTranscript}
+                playbackState={playbackState}
               />
 
               {/* Section 4: Today's Hourly Forecast */}

@@ -24,6 +24,17 @@ export interface VoiceServerMessage {
   message?: string;
 }
 
+export interface VoiceSessionContext {
+  locationName: string;
+  stateName: string;
+  coordinates: string;
+  latitude?: number;
+  longitude?: number;
+  liveWeather: Record<string, unknown>;
+  hourlyForecast: Array<Record<string, unknown>>;
+  alert?: Record<string, unknown>;
+}
+
 export interface VoiceTransportCallbacks {
   onStateChange: (state: VoiceTransportState) => void;
   onText?: (text: string) => void;
@@ -52,7 +63,7 @@ export class VoiceTransport {
   /**
    * Connects to the WeatherGPT backend live voice WebSocket endpoint (/ws/live).
    */
-  public async connect(callbacks: VoiceTransportCallbacks): Promise<void> {
+  public async connect(callbacks: VoiceTransportCallbacks, context?: VoiceSessionContext): Promise<void> {
     if (this.ws && (this.ws.readyState === WebSocket.OPEN || this.ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
@@ -71,8 +82,8 @@ export class VoiceTransport {
         this.ws = socket;
 
         socket.onopen = () => {
-          // Send start handshake message
-          socket.send(JSON.stringify({ type: 'start' }));
+          // Send context with the handshake so the server can establish the Live system instruction before audio processing.
+          socket.send(JSON.stringify({ type: 'start', context }));
         };
 
         socket.onmessage = (event: MessageEvent) => {
@@ -93,7 +104,7 @@ export class VoiceTransport {
               } else if (msg.type === 'text' && msg.text) {
                 this.callbacks?.onText?.(msg.text);
               } else if (msg.type === 'audio' && msg.data) {
-                // Audio payload received from Gemini (held for Checkpoint 4 playback)
+                // Gemini Live currently returns 24 kHz mono 16-bit PCM audio.
                 this.callbacks?.onAudio?.(msg.data, msg.mimeType || 'audio/pcm;rate=24000');
               } else if (msg.type === 'interrupted') {
                 this.callbacks?.onInterrupted?.();

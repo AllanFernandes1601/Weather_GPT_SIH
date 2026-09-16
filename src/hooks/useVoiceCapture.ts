@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { resampleAudio, float32ToInt16PCM, calculateRMS } from '../utils/audioProcessing';
-import { voiceTransport, VoiceTransportState } from '../services/voiceTransport';
+import { voiceTransport, VoiceTransportState, VoiceSessionContext } from '../services/voiceTransport';
 
 export interface AudioDiagnostics {
   processingActive: boolean;
@@ -11,6 +11,8 @@ export interface AudioDiagnostics {
   sampleCount: number;
   rmsLevel: number;
 }
+
+export type VoicePlaybackState = 'idle' | 'receiving' | 'speaking';
 
 export interface UseVoiceCaptureReturn {
   isVoiceActive: boolean;
@@ -23,6 +25,7 @@ export interface UseVoiceCaptureReturn {
   diagnostics: AudioDiagnostics;
   liveState: VoiceTransportState;
   liveTranscript: string;
+  playbackState: VoicePlaybackState;
 }
 
 const INITIAL_DIAGNOSTICS: AudioDiagnostics = {
@@ -39,19 +42,174 @@ const INITIAL_DIAGNOSTICS: AudioDiagnostics = {
  * Custom hook providing browser-native microphone capture, local 16 kHz PCM conversion,
  * and secure backend WebSocket transport to Gemini Live.
  */
-export function useVoiceCapture(): UseVoiceCaptureReturn {
+export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureReturn {
   const [isVoiceActive, setIsVoiceActive] = useState<boolean>(false);
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const [diagnostics, setDiagnostics] = useState<AudioDiagnostics>(INITIAL_DIAGNOSTICS);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [liveState, setLiveState] = useState<VoiceTransportState>('idle');
   const [liveTranscript, setLiveTranscript] = useState<string>('');
+  const [playbackState, setPlaybackState] = useState<VoicePlaybackState>('idle');
 
   // References for Web Audio API node lifecycle
   const streamRef = useRef<MediaStream | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const processorNodeRef = useRef<AudioNode | null>(null);
+  const playbackContextRef = useRef<AudioContext | null>(null);
+  const playbackSourcesRef = useRef(new Set<AudioBufferSourceNode>());
+  const playbackQueueRef = useRef<AudioBuffer[]>([]);
+  const playbackQueueDurationRef = useRef(0);
+  const playbackQueueBytesRef = useRef(0);
+  const playbackRunningRef = useRef(false);
+  const playbackGenerationRef = useRef(0);
+  const turnCompleteRef = useRef(false);
+  const voiceContextRef = useRef(context);
+
+  useEffect(() => {
+    voiceContextRef.current = context;
+  }, [context]);
+
+  const MAX_PLAYBACK_QUEUE_DURATION_SECONDS = 30;
+  const MAX_PLAYBACK_QUEUE_BYTES = 4 * 1024 * 1024;
+
+  const startNextPlayback = useCallback(() => {
+    const playbackContext = playbackContextRef.current;
+    if (!playbackContext || playbackRunningRef.current) return;
+
+    const audioBuffer = playbackQueueRef.current.shift();
+    if (!audioBuffer) {
+      setPlaybackState(turnCompleteRef.current ? 'idle' : 'receiving');
+      return;
+    }
+
+    playbackQueueDurationRef.current = Math.max(0, playbackQueueDurationRef.current - audioBuffer.duration);
+    playbackQueueBytesRef.current = Math.max(
+      0,
+      playbackQueueBytesRef.current - audioBuffer.length * audioBuffer.numberOfChannels * 2
+    );
+    playbackRunningRef.current = true;
+
+    const source = playbackContext.createBufferSource();
+    source.buffer = audioBuffer;
+    source.connect(playbackContext.destination);
+    playbackSourcesRef.current.add(source);
+    const generation = playbackGenerationRef.current;
+    setPlaybackState('speaking');
+
+    source.onended = () => {
+      playbackSourcesRef.current.delete(source);
+      playbackRunningRef.current = false;
+      source.disconnect();
+
+      if (generation !== playbackGenerationRef.current) return;
+      if (playbackQueueRef.current.length > 0) {
+        startNextPlayback();
+      } else {
+        setPlaybackState(turnCompleteRef.current ? 'idle' : 'receiving');
+      }
+    };
+
+    source.start();
+  }, []);
+
+  const stopPlayback = useCallback(() => {
+    playbackGenerationRef.current += 1;
+    playbackQueueRef.current = [];
+    playbackQueueDurationRef.current = 0;
+    playbackQueueBytesRef.current = 0;
+    playbackRunningRef.current = false;
+    turnCompleteRef.current = false;
+
+    playbackSourcesRef.current.forEach((source) => {
+      try {
+        source.onended = null;
+        source.stop();
+      } catch {
+        // The source may already have ended.
+      }
+      try {
+        source.disconnect();
+      } catch {
+        // Ignore cleanup errors.
+      }
+    });
+    playbackSourcesRef.current.clear();
+    setPlaybackState('idle');
+  }, []);
+
+  const closePlayback = useCallback(() => {
+    stopPlayback();
+    const playbackContext = playbackContextRef.current;
+    playbackContextRef.current = null;
+    if (playbackContext && playbackContext.state !== 'closed') {
+      playbackContext.close().catch((err) => {
+        console.warn('[Audio Playback] Error closing AudioContext:', err);
+      });
+    }
+  }, [stopPlayback]);
+
+  const getPlaybackContext = useCallback(() => {
+    if (playbackContextRef.current) return playbackContextRef.current;
+
+    const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+    if (!AudioCtx) throw new Error('Web Audio API playback is not supported in this browser.');
+
+    playbackContextRef.current = new AudioCtx();
+    return playbackContextRef.current;
+  }, []);
+
+  const schedulePlayback = useCallback((base64Data: string, mimeType: string) => {
+    const rateMatch = mimeType.match(/rate=(\d+)/i);
+    const sampleRate = rateMatch ? Number(rateMatch[1]) : 24000;
+    if (!Number.isFinite(sampleRate) || sampleRate <= 0) {
+      throw new Error(`Unsupported Gemini audio sample rate: ${mimeType}`);
+    }
+
+    const binary = atob(base64Data);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) {
+      bytes[index] = binary.charCodeAt(index);
+    }
+    if (bytes.byteLength < 2) return;
+
+    const sampleCount = Math.floor(bytes.byteLength / 2);
+    const playbackContext = getPlaybackContext();
+    const audioBuffer = playbackContext.createBuffer(1, sampleCount, sampleRate);
+    const channelData = audioBuffer.getChannelData(0);
+    const view = new DataView(bytes.buffer, bytes.byteOffset, sampleCount * 2);
+    for (let index = 0; index < sampleCount; index += 1) {
+      channelData[index] = view.getInt16(index * 2, true) / 32768;
+    }
+
+    if (playbackContext.state === 'suspended') {
+      void playbackContext.resume();
+    }
+
+    const chunkBytes = sampleCount * 2;
+    if (
+      playbackQueueDurationRef.current + audioBuffer.duration > MAX_PLAYBACK_QUEUE_DURATION_SECONDS ||
+      playbackQueueBytesRef.current + chunkBytes > MAX_PLAYBACK_QUEUE_BYTES
+    ) {
+      throw new Error('Gemini audio playback buffer exceeded its 30-second limit.');
+    }
+
+    playbackQueueRef.current.push(audioBuffer);
+    playbackQueueDurationRef.current += audioBuffer.duration;
+    playbackQueueBytesRef.current += chunkBytes;
+    startNextPlayback();
+  }, [getPlaybackContext, startNextPlayback]);
+
+  const handlePlaybackAudio = useCallback((data: string, mimeType: string) => {
+    setPlaybackState('receiving');
+    try {
+      schedulePlayback(data, mimeType);
+    } catch (err) {
+      console.error('[Audio Playback] Unable to decode Gemini audio:', err);
+      setVoiceError('Gemini audio could not be played in this browser.');
+      stopPlayback();
+    }
+  }, [schedulePlayback, stopPlayback]);
 
   // Throttling ref for React state updates
   const lastStateUpdateRef = useRef<number>(0);
@@ -70,7 +228,10 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
    * Complete teardown of all audio resources and backend transport.
    */
   const stopCapture = useCallback(() => {
-    // 1. Disconnect WebSocket session to Gemini Live
+    // 1. Stop all Gemini audio before disconnecting the live session.
+    closePlayback();
+
+    // 2. Disconnect WebSocket session to Gemini Live
     try {
       voiceTransport.disconnect();
     } catch (err) {
@@ -78,7 +239,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
     }
     setLiveState('idle');
 
-    // 2. Disconnect and release audio processor node
+    // 3. Disconnect and release audio processor node
     if (processorNodeRef.current) {
       try {
         if ('port' in processorNodeRef.current) {
@@ -93,7 +254,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
       processorNodeRef.current = null;
     }
 
-    // 3. Disconnect MediaStream audio source
+    // 4. Disconnect MediaStream audio source
     if (sourceNodeRef.current) {
       try {
         sourceNodeRef.current.disconnect();
@@ -103,7 +264,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
       sourceNodeRef.current = null;
     }
 
-    // 4. Close AudioContext
+    // 5. Close AudioContext
     if (audioContextRef.current && audioContextRef.current.state !== 'closed') {
       try {
         audioContextRef.current.close().catch((err) => {
@@ -115,7 +276,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
       audioContextRef.current = null;
     }
 
-    // 5. Stop all MediaStream tracks
+    // 6. Stop all MediaStream tracks
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         try {
@@ -127,7 +288,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
       streamRef.current = null;
     }
 
-    // 6. Reset states
+    // 7. Reset states
     setStream(null);
     setIsVoiceActive(false);
     setDiagnostics(INITIAL_DIAGNOSTICS);
@@ -257,7 +418,8 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
         const silentGain = audioContext.createGain();
         silentGain.gain.setValueAtTime(0, audioContext.currentTime);
         scriptNode.connect(silentGain);
-        silentGain.connect(audioContext.destination);
+        // Keep the processor alive without routing microphone audio to speakers.
+        silentGain.connect(audioContext.createMediaStreamDestination());
 
         processorNodeRef.current = scriptNode;
       }
@@ -312,16 +474,21 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
         onText: (text) => {
           setLiveTranscript((prev) => prev + text);
         },
+        onAudio: handlePlaybackAudio,
         onInterrupted: () => {
+          stopPlayback();
           setLiveTranscript('');
         },
         onTurnComplete: () => {
-          // Turn completed
+          turnCompleteRef.current = true;
+          if (playbackSourcesRef.current.size === 0) {
+            setPlaybackState('idle');
+          }
         },
         onError: (errMessage) => {
           setVoiceError(errMessage);
         }
-      });
+      }, voiceContextRef.current);
 
       // Handle unexpected track ending
       audioStream.getAudioTracks().forEach((track) => {
@@ -354,7 +521,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
       stopCapture();
       return false;
     }
-  }, [setupAudioPipeline, stopCapture]);
+  }, [handlePlaybackAudio, setupAudioPipeline, stopCapture, stopPlayback]);
 
   const toggleVoiceCapture = useCallback(async () => {
     if (isVoiceActive) {
@@ -381,6 +548,7 @@ export function useVoiceCapture(): UseVoiceCaptureReturn {
     stream,
     diagnostics,
     liveState,
-    liveTranscript
+    liveTranscript,
+    playbackState
   };
 }

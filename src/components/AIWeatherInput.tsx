@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
 import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
-import { AudioDiagnostics } from '../hooks/useVoiceCapture';
+import { AudioDiagnostics, VoicePlaybackState } from '../hooks/useVoiceCapture';
 import { VoiceTransportState } from '../services/voiceTransport';
 
 interface AIWeatherInputProps {
@@ -18,6 +18,7 @@ interface AIWeatherInputProps {
   diagnostics?: AudioDiagnostics;
   liveState?: VoiceTransportState;
   liveTranscript?: string;
+  playbackState?: VoicePlaybackState;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
@@ -32,7 +33,8 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   onClearVoiceError,
   diagnostics,
   liveState,
-  liveTranscript
+  liveTranscript,
+  playbackState = 'idle'
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -217,8 +219,12 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
                 <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309] block">
                   {liveState === 'connecting'
                     ? 'Connecting to Gemini Live voice session...'
+                    : playbackState === 'receiving'
+                    ? 'Receiving Gemini audio...'
+                    : playbackState === 'speaking'
+                    ? 'Gemini Speaking...'
                     : liveState === 'connected' || liveState === 'sending'
-                    ? `Gemini Live Connected • Streaming audio for ${location.name} Urban`
+                    ? `Gemini Live Connected • Listening for ${location.name} Urban`
                     : `Listening to voice... Processing microphone audio for ${location.name} Urban`}
                 </span>
                 {diagnostics && diagnostics.processingActive && (
@@ -250,6 +256,10 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               <span>
                 {liveState === 'connecting'
                   ? 'Connecting Session'
+                  : playbackState === 'receiving'
+                  ? 'Receiving Gemini Audio'
+                  : playbackState === 'speaking'
+                  ? 'Gemini Speaking'
                   : liveState === 'connected'
                   ? 'Gemini Live Ready'
                   : liveState === 'sending'
