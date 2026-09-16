@@ -542,7 +542,9 @@ export function normalizeOpenMeteoResponse(
   const hourlyIsDays: number[] = hourly.is_day || [];
 
   const startIdx = currentHourlyIndex;
-  const itemsCount = Math.min(8, Math.max(0, hourlyTimes.length - startIdx));
+  // Keep enough live hours for questions about the rest of today and tomorrow.
+  // The dashboard component limits how many cards it displays.
+  const itemsCount = Math.min(48, Math.max(0, hourlyTimes.length - startIdx));
 
   for (let i = 0; i < itemsCount; i++) {
     const idx = startIdx + i;
@@ -571,6 +573,7 @@ export function normalizeOpenMeteoResponse(
 
     hourlyItems.push({
       time: timeLabel,
+      forecastTime: timeIso,
       temperature: Math.round(temps[idx] ?? temperature),
       condition: itemInfo.condition,
       rainProbability: rainProb,

@@ -61,6 +61,7 @@ export interface LocationData {
 
 export interface HourlyForecastItem {
   time: string;
+  forecastTime?: string;
   temperature: number;
   condition: string;
   rainProbability: number;
