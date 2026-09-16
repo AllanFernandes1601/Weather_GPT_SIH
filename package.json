@@ -13,6 +13,7 @@
     "rag:ingest": "set -a; . ./.env; set +a; python3 rag/scripts/ingest_cleaned_data.py --data-dir \"$WEATHERGPT_CLEAN_DATA_DIR\"",
     "rag:test": "python3 -m unittest rag/tests/test_retrieval.py -v",
     "rag:evaluate": "python3 rag/scripts/evaluate_retrieval.py",
+    "risk:test": "node --import tsx scripts/test-risk-engine.ts",
     "setup:ml": "python3 -m venv .venv && .venv/bin/python -m pip install -r ml/requirements.txt",
     "deploy:check": "node scripts/check-deployment.mjs",
     "deploy:prepare": "npm run rag:test && npm run rag:evaluate && npm run lint && npm run build && npm run deploy:check"
