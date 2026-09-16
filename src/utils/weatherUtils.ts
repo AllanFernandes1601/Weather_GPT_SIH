@@ -1,4 +1,4 @@
-import { HourlyForecastItem, LocationData } from '../types';
+import { HourlyForecastItem, LocationData, RainPrediction } from '../types';
 
 /**
  * Maps WMO weather interpretation codes to human-readable condition text and Material Symbols icon name.
@@ -351,7 +351,7 @@ export function calculateSolarCycle(sunriseIso?: string, sunsetIso?: string, cur
  * Normalizes Open-Meteo response into WeatherGPT LocationData and HourlyForecastItem[]
  */
 export function normalizeOpenMeteoResponse(
-  data: { weather: any; airQuality?: any; cached?: boolean },
+  data: { weather: any; airQuality?: any; rainPrediction?: RainPrediction | null; cached?: boolean },
   locationMeta: {
     id: string;
     name: string;
@@ -502,6 +502,7 @@ export function normalizeOpenMeteoResponse(
     name: locationMeta.name,
     state: locationMeta.state,
     coordinates: locationMeta.coordinates,
+    rainPrediction: data.rainPrediction ?? null,
     temperature,
     condition: weatherInfo.condition,
     weatherIcon: weatherInfo.icon,

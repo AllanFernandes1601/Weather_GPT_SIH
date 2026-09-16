@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import { spawn } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 
 const app = express();
@@ -17,8 +18,81 @@ const geocodeSearchCache = new Map<string, CacheEntry<any>>();
 
 const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
 const GEOCODE_CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes
+const BENGALURU_LATITUDE = 12.9716;
+const BENGALURU_LONGITUDE = 77.5946;
+const BENGALURU_MODEL_RADIUS_KM = 30;
+const ML_PYTHON_BIN = process.env.ML_PYTHON_BIN || 'python3';
+const RAIN_PREDICT_SCRIPT = path.join(process.cwd(), 'ml', 'scripts', 'predict_rain.py');
+
+interface RainPrediction {
+  probability: number;
+  willRain: boolean;
+  threshold: number;
+  observedAt: string;
+  modelScope: 'Bengaluru';
+}
 
 app.use(express.json());
+
+function isWithinBengaluruModelArea(latitude: number, longitude: number): boolean {
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const latitudeDelta = toRadians(latitude - BENGALURU_LATITUDE);
+  const longitudeDelta = toRadians(longitude - BENGALURU_LONGITUDE);
+  const a =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(toRadians(BENGALURU_LATITUDE)) *
+      Math.cos(toRadians(latitude)) *
+      Math.sin(longitudeDelta / 2) ** 2;
+  return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= BENGALURU_MODEL_RADIUS_KM;
+}
+
+function predictBengaluruRain(weather: unknown): Promise<RainPrediction> {
+  return new Promise((resolve, reject) => {
+    const process = spawn(ML_PYTHON_BIN, [RAIN_PREDICT_SCRIPT], {
+      stdio: ['pipe', 'pipe', 'pipe']
+    });
+    let stdout = '';
+    let stderr = '';
+    let settled = false;
+
+    const finish = (error?: Error, prediction?: RainPrediction) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timeout);
+      if (error) reject(error);
+      else resolve(prediction!);
+    };
+    const timeout = setTimeout(() => {
+      process.kill();
+      finish(new Error('Rain prediction timed out'));
+    }, 8000);
+
+    process.stdout.on('data', (chunk) => {
+      stdout += chunk.toString();
+    });
+    process.stderr.on('data', (chunk) => {
+      stderr += chunk.toString();
+    });
+    process.on('error', (error) => finish(error));
+    process.on('close', (code) => {
+      if (code !== 0) {
+        finish(new Error(`Rain prediction process exited with code ${code}: ${stderr.trim()}`));
+        return;
+      }
+      try {
+        const prediction = JSON.parse(stdout) as RainPrediction;
+        if (typeof prediction.probability !== 'number' || typeof prediction.willRain !== 'boolean') {
+          throw new Error('Rain prediction returned an invalid response');
+        }
+        finish(undefined, prediction);
+      } catch (error: any) {
+        finish(error instanceof Error ? error : new Error(String(error)));
+      }
+    });
+
+    process.stdin.end(JSON.stringify({ weather }));
+  });
+}
 
 // Health check endpoint
 app.get('/api/health', (_req, res) => {
@@ -56,7 +130,7 @@ app.get('/api/weather', async (req, res) => {
     }
 
     // Fetch Open-Meteo forecast and air quality concurrently
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,rain,weather_code,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,visibility,uv_index,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,weather_code,wind_speed_10m,wind_direction_10m,relative_humidity_2m,visibility,dew_point_2m,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,weather_code&timezone=auto&forecast_days=2`;
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,visibility,uv_index,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,surface_pressure,visibility,dew_point_2m,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,weather_code&timezone=auto&past_hours=6&forecast_days=2`;
     const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=pm10,pm2_5,european_aqi,us_aqi`;
 
     const [weatherRes, airQualityRes] = await Promise.allSettled([
@@ -86,9 +160,19 @@ app.get('/api/weather', async (req, res) => {
       }
     }
 
+    let rainPrediction: RainPrediction | null = null;
+    if (isWithinBengaluruModelArea(latitude, longitude)) {
+      try {
+        rainPrediction = await predictBengaluruRain(weatherData);
+      } catch (predictionError) {
+        console.warn('[Rain Prediction Notice]: Prediction unavailable', predictionError);
+      }
+    }
+
     const payload = {
       weather: weatherData,
       airQuality: airQualityData,
+      rainPrediction,
       source: 'Open-Meteo',
       retrievedAt: new Date().toISOString()
     };
