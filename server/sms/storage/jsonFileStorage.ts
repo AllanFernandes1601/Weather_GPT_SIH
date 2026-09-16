@@ -114,9 +114,9 @@ export class JsonFileSubscriptionStorage implements ISmsSubscriptionStorage {
         },
         alertTypes: input.alertTypes,
         minSeverity: input.minSeverity,
-        preferredLanguage: input.preferredLanguage,
-        isActive: input.isActive,
-        isVerified: input.isVerified,
+        preferredLanguage: input.preferredLanguage || 'en',
+        isActive: input.isActive !== undefined ? input.isActive : true,
+        isVerified: input.isVerified !== undefined ? input.isVerified : false,
         createdAt: now,
         updatedAt: now
       };
