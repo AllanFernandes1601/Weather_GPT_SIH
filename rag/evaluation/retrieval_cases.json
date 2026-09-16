@@ -1,0 +1,51 @@
+[
+  {"id":"weather-ahmedabad","action":"historical_weather","params":{"location":"Ahmedabad","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":15.3},{"path":"longTerm.0.temp_max_c","op":"eq","value":29.9}]},
+  {"id":"weather-bangalore","action":"historical_weather","params":{"location":"Bangalore","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":13.7},{"path":"longTerm.0.temp_max_c","op":"eq","value":24.6}]},
+  {"id":"weather-chennai","action":"historical_weather","params":{"location":"Chennai","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":22.6},{"path":"longTerm.0.temp_max_c","op":"eq","value":27.1}]},
+  {"id":"weather-delhi","action":"historical_weather","params":{"location":"Delhi","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":7.4},{"path":"longTerm.0.temp_max_c","op":"eq","value":19.9}]},
+  {"id":"weather-hyderabad","action":"historical_weather","params":{"location":"Hyderabad","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":16.5},{"path":"longTerm.0.temp_max_c","op":"eq","value":26.8}]},
+  {"id":"weather-jaipur","action":"historical_weather","params":{"location":"Jaipur","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":8.1},{"path":"longTerm.0.temp_max_c","op":"eq","value":21.2}]},
+  {"id":"weather-kolkata","action":"historical_weather","params":{"location":"Kolkata","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":12.4},{"path":"longTerm.0.temp_max_c","op":"eq","value":24.8}]},
+  {"id":"weather-lucknow","action":"historical_weather","params":{"location":"Lucknow","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":8.0},{"path":"longTerm.0.temp_max_c","op":"eq","value":20.7}]},
+  {"id":"weather-mumbai","action":"historical_weather","params":{"location":"Mumbai","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":18.4},{"path":"longTerm.0.temp_max_c","op":"eq","value":30.9}]},
+  {"id":"weather-pune","action":"historical_weather","params":{"location":"Pune","date":"2000-01-01"},"assertions":[{"path":"longTerm.0.temp_min_c","op":"eq","value":14.7},{"path":"longTerm.0.temp_max_c","op":"eq","value":27.7}]},
+
+  {"id":"baseline-delhi-january","action":"climate_baseline","params":{"location":"Delhi","month":1},"assertions":[{"path":"observationCount","op":"eq","value":775},{"path":"tempMaxMeanC","op":"approx","value":19.67,"tolerance":0.01}]},
+  {"id":"baseline-mumbai-july","action":"climate_baseline","params":{"location":"Mumbai","month":7},"assertions":[{"path":"observationCount","op":"eq","value":775},{"path":"precipitationMeanMm","op":"approx","value":22.57,"tolerance":0.01}]},
+  {"id":"baseline-chennai-december","action":"climate_baseline","params":{"location":"Chennai","month":12},"assertions":[{"path":"observationCount","op":"eq","value":775},{"path":"tempMinMeanC","op":"approx","value":22.49,"tolerance":0.01}]},
+  {"id":"baseline-bangalore-june","action":"climate_baseline","params":{"location":"Bangalore","month":6},"assertions":[{"path":"observationCount","op":"eq","value":750},{"path":"precipitationMeanMm","op":"approx","value":3.89,"tolerance":0.01}]},
+  {"id":"baseline-kolkata-may","action":"climate_baseline","params":{"location":"Kolkata","month":5},"assertions":[{"path":"observationCount","op":"eq","value":775},{"path":"tempMaxMeanC","op":"approx","value":34.98,"tolerance":0.01}]},
+  {"id":"baseline-pune-august","action":"climate_baseline","params":{"location":"Pune","month":8},"assertions":[{"path":"observationCount","op":"eq","value":775},{"path":"precipitationMeanMm","op":"approx","value":12.55,"tolerance":0.01}]},
+
+  {"id":"heatwave-odisha-2022","action":"heatwave_history","params":{"region":"Odisha","year":2022},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":11}]},
+  {"id":"heatwave-odisha-2024","action":"heatwave_history","params":{"region":"Odisha","year":2024},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":37}]},
+  {"id":"heatwave-bihar-2023","action":"heatwave_history","params":{"region":"Bihar","year":2023},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":29}]},
+  {"id":"heatwave-punjab-2024","action":"heatwave_history","params":{"region":"Punjab","year":2024},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":27}]},
+  {"id":"heatwave-jharkhand-2022","action":"heatwave_history","params":{"region":"Jharkhand","year":2022},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":27}]},
+  {"id":"heatwave-west-rajasthan-2022","action":"heatwave_history","params":{"region":"West Rajasthan","year":2022},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":58}]},
+  {"id":"heatwave-gangetic-west-bengal-2024","action":"heatwave_history","params":{"region":"Gangetic West Bengal","year":2024},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":31}]},
+  {"id":"heatwave-india-total-2024","action":"heatwave_history","params":{"region":"All Total","year":2024},"assertions":[{"path":"records.0.heatwave_days","op":"eq","value":554}]},
+
+  {"id":"flood-assam-2020","action":"flood_history","params":{"state":"Assam","year":2020,"limit":500},"assertions":[{"path":"events","op":"length_eq","value":6},{"path":"events.0.start_date","op":"eq","value":"2020-05-25"},{"path":"events.5.end_date","op":"eq","value":"2020-10-31"}]},
+  {"id":"flood-odisha-2020","action":"flood_history","params":{"state":"Odisha","year":2020,"limit":500},"assertions":[{"path":"events","op":"length_eq","value":2}]},
+  {"id":"flood-gujarat-2017","action":"flood_history","params":{"state":"Gujarat","year":2017,"limit":500},"assertions":[{"path":"events","op":"length_eq","value":1}]},
+  {"id":"flood-assam-provenance","action":"flood_history","params":{"state":"Assam","year":2020,"limit":500},"assertions":[{"path":"events.1.start_date_raw","op":"eq","value":"06-01-2020 00:00"},{"path":"events.1.cleaning_flags","op":"contains","value":"date_order_resolved"}]},
+  {"id":"flood-no-match","action":"flood_history","params":{"state":"Goa","year":1900,"limit":500},"assertions":[{"path":"events","op":"length_eq","value":0}]},
+
+  {"id":"cyclone-bob-2019","action":"cyclone_history","params":{"year":2019,"basin":"BOB","limit":500},"assertions":[{"path":"records","op":"length_eq","value":151}]},
+  {"id":"cyclone-bob-2020","action":"cyclone_history","params":{"year":2020,"basin":"BOB","limit":500},"assertions":[{"path":"records","op":"length_eq","value":146}]},
+  {"id":"cyclone-bob-2022","action":"cyclone_history","params":{"year":2022,"basin":"BOB","limit":500},"assertions":[{"path":"records","op":"length_eq","value":195}]},
+  {"id":"cyclone-bob-2023","action":"cyclone_history","params":{"year":2023,"basin":"BOB","limit":500},"assertions":[{"path":"records","op":"length_eq","value":163},{"path":"records.0.source_year","op":"eq","value":2023}]},
+  {"id":"cyclone-no-match","action":"cyclone_history","params":{"year":1900,"basin":"BOB","limit":500},"assertions":[{"path":"records","op":"length_eq","value":0}]},
+
+  {"id":"district-aurangabad-ambiguous","action":"district_flood_metrics","params":{"district":"Aurangabad"},"assertions":[{"path":"ambiguous","op":"eq","value":true}]},
+  {"id":"district-mysuru","action":"district_flood_metrics","params":{"district":"Mysuru","state":"KARNATAKA"},"assertions":[{"path":"ambiguous","op":"eq","value":false},{"path":"dfsi","op":"nonempty"}]},
+  {"id":"district-kamrup","action":"district_flood_metrics","params":{"district":"Kamrup","state":"ASSAM"},"assertions":[{"path":"ambiguous","op":"eq","value":false},{"path":"dfsi","op":"nonempty"}]},
+
+  {"id":"resolve-mysuru","action":"resolve_location","params":{"text":"weather in Mysuru today"},"assertions":[{"path":"match.name","op":"eq","value":"Mysuru"}]},
+  {"id":"resolve-kamrup","action":"resolve_location","params":{"text":"flood history of Kamrup district"},"assertions":[{"path":"match.name","op":"eq","value":"Kamrup"}]},
+  {"id":"resolve-odisha","action":"resolve_location","params":{"text":"heatwave days in Odisha"},"assertions":[{"path":"match.name","op":"eq","value":"Odisha"}]},
+  {"id":"resolve-new-delhi","action":"resolve_location","params":{"text":"temperature in New Delhi"},"assertions":[{"path":"match.name","op":"eq","value":"New Delhi"}]},
+  {"id":"resolve-bangalore-alias","action":"resolve_location","params":{"text":"rain in Bangalore"},"assertions":[{"path":"match.name","op":"eq","value":"Bangalore"}]},
+  {"id":"resolve-ernakulam","action":"resolve_location","params":{"text":"floods in Ernakulam Kerala"},"assertions":[{"path":"match.name","op":"eq","value":"Ernakulam"}]}
+]

@@ -1,34 +1,45 @@
 import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
-import { SuggestedQuestion } from '../types';
+import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
 
 interface AIWeatherInputProps {
+  location: LocationData;
+  hourlyForecast: HourlyForecastItem[];
   locationName: string;
+  latitude?: number;
+  longitude?: number;
   isVoiceActive: boolean;
   onToggleVoice: () => void;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
+  location,
+  hourlyForecast,
   locationName,
+  latitude,
+  longitude,
   isVoiceActive,
   onToggleVoice
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeResponse, setActiveResponse] = useState<AIResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleAsk = async (textToAsk?: string) => {
     const questionText = textToAsk || query;
     if (!questionText.trim()) return;
 
     setIsLoading(true);
+    setErrorMessage('');
     try {
-      const response = await aiWeatherService.askWeatherGPT(questionText, locationName);
+      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
       setActiveResponse(response);
       setQuery(questionText);
     } catch (err) {
       console.error(err);
+      setErrorMessage(err instanceof Error ? err.message : 'WeatherGPT is temporarily unavailable');
     } finally {
       setIsLoading(false);
     }
@@ -191,13 +202,19 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
                 sensors
               </span>
               <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309]">
-                Listening to voice... Analyzing atmospheric cloud data for {locationName} Urban
+                Listening to voice... Analyzing atmospheric cloud data for {location.name} Urban
               </span>
             </div>
             <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase">
               <span>Synoptic Cloud Stream Active</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mt-3 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-[13px] font-semibold text-rose-800">
+            {errorMessage}
           </div>
         )}
 
@@ -217,7 +234,10 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
                     WeatherGPT Advisory • {activeResponse.timestamp}
                   </h4>
                   <p className="text-[12px] text-[#6E645A]">
-                    Target: <span className="font-semibold text-[#1C1814]">{activeResponse.query}</span>
+                    Question: <span className="font-semibold text-[#1C1814]">{activeResponse.query}</span>
+                    {activeResponse.locationUsed && (
+                      <span className="ml-1.5 text-[#B45309] font-medium">({activeResponse.locationUsed})</span>
+                    )}
                   </p>
                 </div>
               </div>
@@ -225,14 +245,22 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               <div className="flex items-center gap-2">
                 <span
                   className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
-                    activeResponse.riskLevel === 'High'
+                    activeResponse.isError
+                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                      : activeResponse.needsClarification
+                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                      : activeResponse.riskLevel === 'High'
                       ? 'bg-rose-100 text-rose-800 border border-rose-200'
                       : activeResponse.riskLevel === 'Moderate'
                       ? 'bg-amber-100 text-amber-900 border border-amber-300'
                       : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
                   }`}
                 >
-                  {activeResponse.riskLevel} Risk
+                  {activeResponse.isError
+                    ? 'Service Notice'
+                    : activeResponse.needsClarification
+                    ? 'Clarify Location'
+                    : `${activeResponse.riskLevel} Risk`}
                 </span>
                 <button
                   type="button"
@@ -268,9 +296,29 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               </ul>
             </div>
 
+            {activeResponse.sources?.length > 0 && (
+              <div className="mt-3 p-3 rounded-xl bg-white/70 border border-[#E5DCCF]">
+                <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+                  Sources used
+                </span>
+                <ul className="mt-1.5 space-y-1 text-[11px] text-[#6E645A]">
+                  {activeResponse.sources.map((source) => (
+                    <li key={source} className="flex items-start gap-1.5 break-all">
+                      <span aria-hidden="true">↳</span>
+                      {source.startsWith('http') ? (
+                        <a href={source} target="_blank" rel="noreferrer" className="text-[#B45309] underline">
+                          {source}
+                        </a>
+                      ) : <span>{source}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="mt-3 pt-2 border-t border-[#E5DCCF] flex items-center justify-between text-[11px] text-[#8E9197]">
               <span>{activeResponse.sourceDisclaimer}</span>
-              <span className="font-semibold text-[#B45309]">Gemini ready architecture</span>
+<span className="font-semibold text-[#B45309]">Live Open-Meteo + Gemini + structured retrieval</span>
             </div>
           </div>
         )}
@@ -289,7 +337,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
             <span className="material-symbols-outlined text-[15px] text-emerald-600">
               verified
             </span>
-            Simulated Meteorological Intelligence Model (Demo)
+Live weather telemetry and cleaned historical evidence
           </span>
         </div>
 

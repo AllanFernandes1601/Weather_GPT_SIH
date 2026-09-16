@@ -261,13 +261,13 @@ export const HOURLY_FORECAST_DATA: HourlyForecastItem[] = [
 export const ACTIVE_ALERT: WeatherAlert = {
   id: 'alert-blr-24-08',
   severity: 'moderate',
-  badgeText: 'Moderate Rain Advisory',
-  bulletinRef: 'BLR/24/08 (Demo)',
-  stage: 'Advisory Stage',
-  title: 'Heavy Rain Alert — Expected in Eastern & Southern Sectors',
-  timeWindow: '3:30 PM – 8:00 PM IST',
+  badgeText: 'Preparedness Scenario',
+  bulletinRef: 'DEMO/BLR/RAIN',
+  stage: 'Not a live warning',
+  title: 'Demo: Heavy-rain commute preparedness',
+  timeWindow: 'Example window: 3:30 PM – 8:00 PM IST',
   description:
-    'Localized convective cloud burst expected between 3:30 PM – 8:00 PM IST. Potential waterlogging on Outer Ring Road, Bellandur, and Whitefield transit corridors. Commuters are advised to pace travel times.',
+    'Illustrative preparedness scenario for testing route-safety guidance. It is not sourced from a current IMD or municipal warning.',
   affectedCorridors: [
     'Outer Ring Road (Silk Board to Marathahalli)',
     'Bellandur EcoSpace Transit Cut',
@@ -276,8 +276,8 @@ export const ACTIVE_ALERT: WeatherAlert = {
   ],
   routePrecautions: [
     'Avoid parking in basement garages prone to backflow flooding.',
-    'Plan commute departures before 3:30 PM or defer till post 7:30 PM if traveling across ORR.',
-    'Maintain safe vehicle distance; wet road traction reduced by 40%.',
+    'Adjust departure time if an official warning affects the route.',
+    'Maintain a safe following distance on wet roads.',
     'Keep emergency power banks charged for navigation and alert updates.'
   ],
   safetyChecklist: [
