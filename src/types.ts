@@ -1,5 +1,126 @@
 export type NavTab = 'home' | 'forecast' | 'alerts' | 'weather-map' | 'safety';
 
+export type IncidentType =
+  | 'flood'
+  | 'cyclone'
+  | 'drought'
+  | 'heavy_rain'
+  | 'heatwave'
+  | 'lightning'
+  | 'landslide'
+  | 'crop_loss'
+  | 'house_damage'
+  | 'livelihood_loss'
+  | 'business_damage'
+  | 'other';
+
+export type ImpactType =
+  | 'crop_damage'
+  | 'agricultural_land_damage'
+  | 'house_damage'
+  | 'property_damage'
+  | 'livestock_loss'
+  | 'livelihood_loss'
+  | 'employment_loss'
+  | 'fishing_equipment_damage'
+  | 'business_damage'
+  | 'injury'
+  | 'displacement';
+
+export type OccupationType =
+  | 'farmer'
+  | 'tenant_farmer'
+  | 'sharecropper'
+  | 'fisher'
+  | 'business_owner'
+  | 'worker'
+  | 'self_employed'
+  | 'employed'
+  | 'student'
+  | 'retired'
+  | 'other';
+
+export type FarmerStatus = 'farmer' | 'tenant_farmer' | 'sharecropper' | 'not_farmer';
+export type CropInsuranceStatus = 'insured' | 'not_insured' | 'unknown';
+export type CropNotifiedStatus = 'notified' | 'not_notified' | 'unknown';
+
+export interface AssistanceUserProfile {
+  incidentType?: IncidentType | IncidentType[];
+  incidentDescription?: string;
+  impactTypes?: ImpactType[];
+  state?: string;
+  district?: string;
+  occupation?: OccupationType;
+  farmerStatus?: FarmerStatus;
+  cropInsuranceStatus?: CropInsuranceStatus;
+  cropNotifiedStatus?: CropNotifiedStatus;
+  agriculturalLandAffected?: boolean;
+  housingDamage?: boolean;
+  livelihoodLoss?: boolean;
+  businessDamage?: boolean;
+  annualHouseholdIncome?: number;
+  notifiedAreaStatus?: 'notified' | 'not_notified' | 'unknown';
+  coveredPerilStatus?: 'covered' | 'not_covered' | 'unknown';
+}
+
+export type AssistanceProfileField = keyof AssistanceUserProfile;
+
+export type EligibilityRule =
+  | {
+      id: string;
+      field: AssistanceProfileField;
+      kind: 'required';
+      description: string;
+    }
+  | {
+      id: string;
+      field: AssistanceProfileField;
+      kind: 'allowed_values';
+      values: readonly string[];
+      description: string;
+    }
+  | {
+      id: string;
+      field: AssistanceProfileField;
+      kind: 'equals';
+      value: string | boolean;
+      description: string;
+    };
+
+export type EligibilityStatus =
+  | 'ELIGIBLE'
+  | 'POSSIBLY_ELIGIBLE'
+  | 'NOT_ELIGIBLE'
+  | 'INSUFFICIENT_INFORMATION';
+
+export interface EligibilityResult {
+  schemeId: string;
+  status: EligibilityStatus;
+  matchedReasons: string[];
+  failedReasons: string[];
+  missingInformation: string[];
+}
+
+export interface GovernmentAssistanceScheme {
+  id: string;
+  name: string;
+  shortName: string;
+  description: string;
+  authority: string;
+  scope: 'national' | 'state' | 'district';
+  applicableStates: readonly string[];
+  applicableIncidents: readonly IncidentType[];
+  applicableImpacts: readonly ImpactType[];
+  applicableOccupations: readonly OccupationType[];
+  eligibilityRules: readonly EligibilityRule[];
+  benefits: readonly string[];
+  requiredDocuments: readonly string[];
+  officialSourceUrl: string;
+  applicationUrl: string;
+  sourceLabel: string;
+  lastVerified: string;
+}
+
 export interface RainPrediction {
   probability: number;
   willRain: boolean;
