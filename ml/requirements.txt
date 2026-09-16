@@ -1,0 +1,11 @@
+# Planned ML environment for the next-hour rainfall probability project.
+# No training or data-collection scripts have been added yet.
+
+pandas>=2.2,<3.0
+numpy>=1.26,<3.0
+scikit-learn>=1.5,<2.0
+xgboost>=2.1,<4.0
+requests>=2.32,<3.0
+joblib>=1.4,<2.0
+python-dotenv>=1.0,<2.0
+pyarrow>=16.0,<24.0

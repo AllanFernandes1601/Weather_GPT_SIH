@@ -1,0 +1,1162 @@
+{
+  "city_years": {
+    "ahmedabad-2022": {
+      "city_id": "ahmedabad",
+      "forecast": {
+        "bytes": 217219,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=ahmedabad/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 229671,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=ahmedabad/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90528,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=ahmedabad/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:20.410362+00:00",
+      "year": 2022
+    },
+    "ahmedabad-2023": {
+      "city_id": "ahmedabad",
+      "forecast": {
+        "bytes": 213916,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=ahmedabad/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 227845,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=ahmedabad/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90343,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=ahmedabad/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:30.888039+00:00",
+      "year": 2023
+    },
+    "ahmedabad-2024": {
+      "city_id": "ahmedabad",
+      "forecast": {
+        "bytes": 230101,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=ahmedabad/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 244133,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=ahmedabad/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91381,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=ahmedabad/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:40.579608+00:00",
+      "year": 2024
+    },
+    "ahmedabad-2025": {
+      "city_id": "ahmedabad",
+      "forecast": {
+        "bytes": 245075,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=ahmedabad/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 259483,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=ahmedabad/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90537,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=ahmedabad/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:51.414983+00:00",
+      "year": 2025
+    },
+    "bengaluru-2022": {
+      "city_id": "bengaluru",
+      "forecast": {
+        "bytes": 219126,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=bengaluru/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 237300,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=bengaluru/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93246,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=bengaluru/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:48:51.971333+00:00",
+      "year": 2022
+    },
+    "bengaluru-2023": {
+      "city_id": "bengaluru",
+      "forecast": {
+        "bytes": 212656,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=bengaluru/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 229124,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=bengaluru/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91520,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=bengaluru/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:00.406734+00:00",
+      "year": 2023
+    },
+    "bengaluru-2024": {
+      "city_id": "bengaluru",
+      "forecast": {
+        "bytes": 228901,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=bengaluru/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 247203,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=bengaluru/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93393,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=bengaluru/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:09.869130+00:00",
+      "year": 2024
+    },
+    "bengaluru-2025": {
+      "city_id": "bengaluru",
+      "forecast": {
+        "bytes": 244293,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=bengaluru/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 261844,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=bengaluru/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92013,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=bengaluru/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:20.624618+00:00",
+      "year": 2025
+    },
+    "chennai-2022": {
+      "city_id": "chennai",
+      "forecast": {
+        "bytes": 222508,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=chennai/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 242537,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=chennai/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 94106,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=chennai/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:50.818339+00:00",
+      "year": 2022
+    },
+    "chennai-2023": {
+      "city_id": "chennai",
+      "forecast": {
+        "bytes": 218430,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=chennai/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 236904,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=chennai/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92513,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=chennai/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:00.385050+00:00",
+      "year": 2023
+    },
+    "chennai-2024": {
+      "city_id": "chennai",
+      "forecast": {
+        "bytes": 233163,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=chennai/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 252568,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=chennai/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93932,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=chennai/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:10.471733+00:00",
+      "year": 2024
+    },
+    "chennai-2025": {
+      "city_id": "chennai",
+      "forecast": {
+        "bytes": 248967,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=chennai/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 266162,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=chennai/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91824,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=chennai/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:20.478023+00:00",
+      "year": 2025
+    },
+    "delhi-2022": {
+      "city_id": "delhi",
+      "forecast": {
+        "bytes": 215375,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=delhi/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 229937,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=delhi/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91486,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=delhi/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:10.689198+00:00",
+      "year": 2022
+    },
+    "delhi-2023": {
+      "city_id": "delhi",
+      "forecast": {
+        "bytes": 214399,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=delhi/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 229429,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=delhi/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90792,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=delhi/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:20.547091+00:00",
+      "year": 2023
+    },
+    "delhi-2024": {
+      "city_id": "delhi",
+      "forecast": {
+        "bytes": 225963,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=delhi/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 240826,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=delhi/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91726,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=delhi/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:30.142472+00:00",
+      "year": 2024
+    },
+    "delhi-2025": {
+      "city_id": "delhi",
+      "forecast": {
+        "bytes": 242172,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=delhi/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 257115,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=delhi/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90707,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=delhi/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:39.887388+00:00",
+      "year": 2025
+    },
+    "guwahati-2022": {
+      "city_id": "guwahati",
+      "forecast": {
+        "bytes": 228278,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=guwahati/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 250580,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=guwahati/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 95241,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=guwahati/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:46.790359+00:00",
+      "year": 2022
+    },
+    "guwahati-2023": {
+      "city_id": "guwahati",
+      "forecast": {
+        "bytes": 222578,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=guwahati/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 245204,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=guwahati/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 94506,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=guwahati/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:54.246968+00:00",
+      "year": 2023
+    },
+    "guwahati-2024": {
+      "city_id": "guwahati",
+      "forecast": {
+        "bytes": 237804,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=guwahati/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 261180,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=guwahati/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 95855,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=guwahati/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:02.571942+00:00",
+      "year": 2024
+    },
+    "guwahati-2025": {
+      "city_id": "guwahati",
+      "forecast": {
+        "bytes": 249492,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=guwahati/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 272065,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=guwahati/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 94411,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=guwahati/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:53:10.876506+00:00",
+      "year": 2025
+    },
+    "hyderabad-2022": {
+      "city_id": "hyderabad",
+      "forecast": {
+        "bytes": 226371,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=hyderabad/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 243052,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=hyderabad/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92576,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=hyderabad/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:05.859225+00:00",
+      "year": 2022
+    },
+    "hyderabad-2023": {
+      "city_id": "hyderabad",
+      "forecast": {
+        "bytes": 217968,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=hyderabad/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 233668,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=hyderabad/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91189,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=hyderabad/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:15.530071+00:00",
+      "year": 2023
+    },
+    "hyderabad-2024": {
+      "city_id": "hyderabad",
+      "forecast": {
+        "bytes": 236039,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=hyderabad/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 254420,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=hyderabad/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93465,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=hyderabad/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:25.119782+00:00",
+      "year": 2024
+    },
+    "hyderabad-2025": {
+      "city_id": "hyderabad",
+      "forecast": {
+        "bytes": 246745,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=hyderabad/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 264409,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=hyderabad/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92103,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=hyderabad/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:52:35.194347+00:00",
+      "year": 2025
+    },
+    "jaipur-2022": {
+      "city_id": "jaipur",
+      "forecast": {
+        "bytes": 217434,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=jaipur/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 230371,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=jaipur/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90742,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=jaipur/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:01.270121+00:00",
+      "year": 2022
+    },
+    "jaipur-2023": {
+      "city_id": "jaipur",
+      "forecast": {
+        "bytes": 216705,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=jaipur/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 230852,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=jaipur/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90391,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=jaipur/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:08.231541+00:00",
+      "year": 2023
+    },
+    "jaipur-2024": {
+      "city_id": "jaipur",
+      "forecast": {
+        "bytes": 229797,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=jaipur/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 244179,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=jaipur/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 91521,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=jaipur/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:15.219485+00:00",
+      "year": 2024
+    },
+    "jaipur-2025": {
+      "city_id": "jaipur",
+      "forecast": {
+        "bytes": 244408,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=jaipur/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 258704,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=jaipur/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 90440,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=jaipur/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:22.891743+00:00",
+      "year": 2025
+    },
+    "kochi-2022": {
+      "city_id": "kochi",
+      "forecast": {
+        "bytes": 226112,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kochi/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 251013,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=kochi/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 96494,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kochi/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:39.849082+00:00",
+      "year": 2022
+    },
+    "kochi-2023": {
+      "city_id": "kochi",
+      "forecast": {
+        "bytes": 218117,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kochi/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 241836,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=kochi/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 95017,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kochi/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:49.768845+00:00",
+      "year": 2023
+    },
+    "kochi-2024": {
+      "city_id": "kochi",
+      "forecast": {
+        "bytes": 236710,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kochi/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 261750,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=kochi/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 96638,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kochi/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:54:59.872048+00:00",
+      "year": 2024
+    },
+    "kochi-2025": {
+      "city_id": "kochi",
+      "forecast": {
+        "bytes": 255797,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kochi/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 280033,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=kochi/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 95245,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kochi/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:55:10.518624+00:00",
+      "year": 2025
+    },
+    "kolkata-2022": {
+      "city_id": "kolkata",
+      "forecast": {
+        "bytes": 226955,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kolkata/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 245082,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=kolkata/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93254,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kolkata/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:29.763134+00:00",
+      "year": 2022
+    },
+    "kolkata-2023": {
+      "city_id": "kolkata",
+      "forecast": {
+        "bytes": 222459,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kolkata/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 241634,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=kolkata/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92849,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kolkata/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:37.760028+00:00",
+      "year": 2023
+    },
+    "kolkata-2024": {
+      "city_id": "kolkata",
+      "forecast": {
+        "bytes": 238397,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kolkata/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 258708,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=kolkata/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 94374,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kolkata/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:45.975789+00:00",
+      "year": 2024
+    },
+    "kolkata-2025": {
+      "city_id": "kolkata",
+      "forecast": {
+        "bytes": 252972,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=kolkata/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 273053,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=kolkata/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93240,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=kolkata/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:51:54.627503+00:00",
+      "year": 2025
+    },
+    "mumbai-2022": {
+      "city_id": "mumbai",
+      "forecast": {
+        "bytes": 223369,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=mumbai/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 242540,
+        "end": "2022-12-31 22:00:00",
+        "path": "data/processed/city=mumbai/year=2022/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93890,
+        "end": "2022-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=mumbai/year=2022/hourly.parquet",
+        "rows": 8760,
+        "start": "2022-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:31.491130+00:00",
+      "year": 2022
+    },
+    "mumbai-2023": {
+      "city_id": "mumbai",
+      "forecast": {
+        "bytes": 219662,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=mumbai/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 237581,
+        "end": "2023-12-31 22:00:00",
+        "path": "data/processed/city=mumbai/year=2023/rainfall_correction.parquet",
+        "rows": 8759,
+        "source_rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 92396,
+        "end": "2023-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=mumbai/year=2023/hourly.parquet",
+        "rows": 8760,
+        "start": "2023-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:40.843366+00:00",
+      "year": 2023
+    },
+    "mumbai-2024": {
+      "city_id": "mumbai",
+      "forecast": {
+        "bytes": 234794,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=mumbai/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 253619,
+        "end": "2024-12-31 22:00:00",
+        "path": "data/processed/city=mumbai/year=2024/rainfall_correction.parquet",
+        "rows": 8783,
+        "source_rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93796,
+        "end": "2024-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=mumbai/year=2024/hourly.parquet",
+        "rows": 8784,
+        "start": "2024-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:49:50.318594+00:00",
+      "year": 2024
+    },
+    "mumbai-2025": {
+      "city_id": "mumbai",
+      "forecast": {
+        "bytes": 247600,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_forecast/city=mumbai/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "processed": {
+        "bytes": 267218,
+        "end": "2025-12-31 22:00:00",
+        "path": "data/processed/city=mumbai/year=2025/rainfall_correction.parquet",
+        "rows": 8759,
+        "start": "2025-01-01 00:00:00"
+      },
+      "status": "complete",
+      "target": {
+        "bytes": 93171,
+        "end": "2025-12-31 23:00:00",
+        "path": "data/raw/historical_weather_targets/city=mumbai/year=2025/hourly.parquet",
+        "rows": 8760,
+        "start": "2025-01-01 00:00:00"
+      },
+      "updated_at_utc": "2026-09-15T14:50:00.221610+00:00",
+      "year": 2025
+    }
+  },
+  "dataset": "weathergpt_rainfall_correction",
+  "forecast_source": {
+    "api": "https://historical-forecast-api.open-meteo.com/v1/forecast",
+    "model": "gfs_global",
+    "variables": [
+      "temperature_2m",
+      "relative_humidity_2m",
+      "dew_point_2m",
+      "apparent_temperature",
+      "surface_pressure",
+      "cloud_cover",
+      "cloud_cover_low",
+      "cloud_cover_mid",
+      "cloud_cover_high",
+      "wind_speed_10m",
+      "wind_direction_10m",
+      "wind_gusts_10m",
+      "precipitation_probability",
+      "precipitation",
+      "rain",
+      "showers",
+      "weather_code",
+      "visibility",
+      "cape",
+      "lifted_index",
+      "convective_inhibition",
+      "boundary_layer_height",
+      "total_column_integrated_water_vapour",
+      "is_day"
+    ]
+  },
+  "target_source": {
+    "api": "https://archive-api.open-meteo.com/v1/archive",
+    "model": "era5",
+    "variables": [
+      "precipitation",
+      "rain",
+      "weather_code"
+    ]
+  },
+  "timezone": "Asia/Kolkata",
+  "updated_at_utc": "2026-09-15T14:55:10.518644+00:00"
+}

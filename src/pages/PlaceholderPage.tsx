@@ -54,7 +54,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#E5DCCF]/60 text-[13px] text-[#6E645A] flex items-center justify-between">
-                <span>Weather data source will be connected in future iterations.</span>
+                <span>This seven-day view is illustrative; the home-page hourly forecast uses live Open-Meteo data.</span>
                 <span className="font-semibold text-[#B45309]">Demo Forecast View</span>
               </div>
             </div>
@@ -62,8 +62,8 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         };
       case 'alerts':
         return {
-          title: 'Active Severe Weather & Flood Alerts',
-          subtitle: `District and state disaster management bulletins for ${location.state}`,
+          title: 'Weather Preparedness Scenarios',
+          subtitle: `Demonstration guidance for ${location.state}; no official live alert feed is connected`,
           icon: 'warning',
           tag: 'Civil Protection',
           content: (
@@ -77,7 +77,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                     </h4>
                   </div>
                   <span className="text-[11px] font-bold text-[#EA580C] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
-                    Active Advisory
+                    Demo Scenario
                   </span>
                 </div>
                 <p className="text-[14px] text-[#6E645A]">
@@ -109,10 +109,10 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         };
       case 'weather-map':
         return {
-          title: 'Interactive Precipitation & Synoptic Weather Map',
-          subtitle: 'Synoptic grid reflectivity, cloud albedo, and wind streamlines',
+          title: 'Radar & Weather Map Prototype',
+          subtitle: 'Illustrative map surface; no live radar layer is connected',
           icon: 'map',
-          tag: 'Spatial Telemetry',
+          tag: 'Demo Spatial View',
           content: (
             <div className="space-y-6">
               <div className="relative rounded-3xl overflow-hidden border border-[#E5DCCF] shadow-sm bg-[#131315] aspect-[16/9] max-h-[440px] flex items-center justify-center text-center p-6">
@@ -135,7 +135,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                   </p>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[12px] border border-white/20">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Demo Radar Sweep: Active</span>
+                    <span>Simulated radar visualization</span>
                   </div>
                 </div>
               </div>

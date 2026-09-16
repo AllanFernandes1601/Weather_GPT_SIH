@@ -212,6 +212,8 @@ export default function App() {
 
               {/* Section 3: Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
               <AIWeatherInput
+                location={activeLocation}
+                hourlyForecast={hourlyForecast}
                 locationName={activeLocation.name}
                 latitude={activeLocation.latitude}
                 longitude={activeLocation.longitude}

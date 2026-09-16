@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
-import { SuggestedQuestion } from '../types';
+import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
 
 interface AIWeatherInputProps {
+  location: LocationData;
+  hourlyForecast: HourlyForecastItem[];
   locationName: string;
   latitude?: number;
   longitude?: number;
@@ -12,6 +14,8 @@ interface AIWeatherInputProps {
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
+  location,
+  hourlyForecast,
   locationName,
   latitude,
   longitude,
@@ -21,18 +25,21 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [activeResponse, setActiveResponse] = useState<AIResponse | null>(null);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleAsk = async (textToAsk?: string) => {
     const questionText = textToAsk || query;
     if (!questionText.trim()) return;
 
     setIsLoading(true);
+    setErrorMessage('');
     try {
-      const response = await aiWeatherService.askWeatherGPT(questionText, locationName, latitude, longitude);
+<const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
       setActiveResponse(response);
       setQuery(questionText);
     } catch (err) {
       console.error(err);
+      setErrorMessage(err instanceof Error ? err.message : 'WeatherGPT is temporarily unavailable');
     } finally {
       setIsLoading(false);
     }
@@ -195,13 +202,19 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
                 sensors
               </span>
               <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309]">
-                Listening to voice... Analyzing atmospheric cloud data for {locationName} Urban
+                Listening to voice... Analyzing atmospheric cloud data for {location.name} Urban
               </span>
             </div>
             <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase">
               <span>Synoptic Cloud Stream Active</span>
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
             </div>
+          </div>
+        )}
+
+        {errorMessage && (
+          <div className="mt-3 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-[13px] font-semibold text-rose-800">
+            {errorMessage}
           </div>
         )}
 
@@ -283,9 +296,29 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               </ul>
             </div>
 
+            {activeResponse.sources?.length > 0 && (
+              <div className="mt-3 p-3 rounded-xl bg-white/70 border border-[#E5DCCF]">
+                <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+                  Sources used
+                </span>
+                <ul className="mt-1.5 space-y-1 text-[11px] text-[#6E645A]">
+                  {activeResponse.sources.map((source) => (
+                    <li key={source} className="flex items-start gap-1.5 break-all">
+                      <span aria-hidden="true">↳</span>
+                      {source.startsWith('http') ? (
+                        <a href={source} target="_blank" rel="noreferrer" className="text-[#B45309] underline">
+                          {source}
+                        </a>
+                      ) : <span>{source}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="mt-3 pt-2 border-t border-[#E5DCCF] flex items-center justify-between text-[11px] text-[#8E9197]">
               <span>{activeResponse.sourceDisclaimer}</span>
-              <span className="font-semibold text-[#B45309]">Open-Meteo &amp; Gemini AI Grounded</span>
+<span className="font-semibold text-[#B45309]">Live Open-Meteo + Gemini + structured retrieval</span>
             </div>
           </div>
         )}
@@ -304,7 +337,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
             <span className="material-symbols-outlined text-[15px] text-emerald-600">
               verified
             </span>
-            Real-Time Meteorological Telemetry
+Live weather telemetry and cleaned historical evidence
           </span>
         </div>
 

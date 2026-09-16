@@ -1,5 +1,13 @@
 export type NavTab = 'home' | 'forecast' | 'alerts' | 'weather-map' | 'safety';
 
+export interface RainPrediction {
+  probability: number;
+  willRain: boolean;
+  threshold: number;
+  observedAt: string;
+  modelScope: 'Bengaluru';
+}
+
 export interface LocationData {
   id: string;
   name: string;
@@ -9,6 +17,7 @@ export interface LocationData {
   longitude?: number;
   isLive?: boolean;
   dataSource?: string;
+  rainPrediction?: RainPrediction | null;
   isDay?: boolean;
   weatherIcon?: string;
   temperature: number;

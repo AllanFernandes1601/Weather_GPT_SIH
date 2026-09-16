@@ -138,6 +138,16 @@ export const WeatherHero: React.FC<WeatherHeroProps> = ({
               className="col-span-2 sm:col-span-1"
             />
           </div>
+
+          {location.rainPrediction && (
+            <div className="inline-flex self-start items-center gap-2.5 px-3.5 py-2 rounded-xl bg-blue-50/90 border border-blue-200 text-[#1C1814]">
+              <span className="material-symbols-outlined text-blue-700 text-[19px]">rainy</span>
+              <span className="text-[12px] font-bold">
+                Next-hour rain probability: {Math.round(location.rainPrediction.probability * 100)}%
+              </span>
+              <span className="text-[11px] text-[#52606D]">Bengaluru ML model</span>
+            </div>
+          )}
         </div>
 
         {/* Right Column: Atmospheric Graphic with LIVE VOICE & RADAR ACOUSTIC SYNC */}

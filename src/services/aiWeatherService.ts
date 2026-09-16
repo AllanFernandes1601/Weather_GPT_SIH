@@ -1,3 +1,5 @@
+import { HourlyForecastItem, LocationData } from '../types';
+
 export interface AIResponse {
   query: string;
   summary: string;
@@ -6,6 +8,32 @@ export interface AIResponse {
   actionItems: string[];
   timestamp: string;
   sourceDisclaimer: string;
+  sources: string[];
+}
+
+export const aiWeatherService = {
+  async askWeatherGPT(
+    prompt: string,
+    location: LocationData,
+    hourlyForecast: HourlyForecastItem[]
+  ): Promise<AIResponse> {
+    const liveWeather = {
+      source: location.dataSource,
+      isLive: location.isLive,
+      condition: location.condition,
+      temperatureC: location.temperature,
+      feelsLikeC: location.feelsLike,
+      highC: location.high,
+      lowC: location.low,
+      humidityPercent: location.humidity,
+      windSpeedKmh: location.windSpeed,
+      windDirection: location.windDirection,
+      windGustsKmh: location.windGusts,
+      uvIndex: location.uvIndex,
+      visibilityKm: location.visibility,
+      pressureHpa: location.pressure,
+      precipitationMm: location.precipitation.dailyTotalMm,
+      rainPrediction: location.rainPrediction
   locationUsed?: string;
   isLive?: boolean;
   needsClarification?: boolean;
@@ -100,6 +128,27 @@ export const aiWeatherService = {
       locationUsed: locationName,
       isLive: false
     };
+    const response = await fetch('/api/ai/weather', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        prompt,
+        locationName: location.name,
+        stateName: location.state,
+        liveWeather,
+        hourlyForecast: hourlyForecast.slice(0, 12).map(item => ({
+          time: item.time,
+          temperatureC: item.temperature,
+          condition: item.condition,
+          rainProbabilityPercent: item.rainProbability
+        }))
+      })
+    });
+    const payload = await response.json();
+    if (!response.ok) {
+      throw new Error(payload.error || 'WeatherGPT is temporarily unavailable');
+    }
+    return payload as AIResponse;
   }
 };
 

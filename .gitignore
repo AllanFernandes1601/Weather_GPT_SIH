@@ -1,4 +1,5 @@
 node_modules/
+.venv/
 build/
 dist/
 coverage/
@@ -6,3 +7,6 @@ coverage/
 *.log
 .env*
 !.env.example
+rag/data/*.sqlite
+rag/data/*.sqlite-shm
+rag/data/*.sqlite-wal
