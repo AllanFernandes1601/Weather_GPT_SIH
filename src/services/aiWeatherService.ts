@@ -1,5 +1,3 @@
-import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
-
 export interface AIResponse {
   query: string;
   summary: string;
@@ -8,47 +6,100 @@ export interface AIResponse {
   actionItems: string[];
   timestamp: string;
   sourceDisclaimer: string;
+  locationUsed?: string;
+  isLive?: boolean;
+  needsClarification?: boolean;
+  isError?: boolean;
 }
 
 /**
  * Service to process WeatherGPT conversational intelligence.
- * Designed with standard request/response interfaces so Gemini SDK can be hooked up directly.
+ * Dispatches to server-side Open-Meteo retrieval and grounded Gemini AI reasoning.
  */
 export const aiWeatherService = {
-  async askWeatherGPT(prompt: string, locationName = 'Bengaluru'): Promise<AIResponse> {
-    // Artificial latency to simulate conversational AI processing
-    await new Promise(resolve => setTimeout(resolve, 600));
+  async askWeatherGPT(
+    prompt: string,
+    locationName = 'Bengaluru',
+    latitude?: number,
+    longitude?: number
+  ): Promise<AIResponse> {
+    const trimmed = prompt.trim();
+    const timestamp = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
-    const clean = prompt.trim().toLowerCase();
-    const matched = SUGGESTED_QUESTIONS.find(
-      q => q.text.toLowerCase().includes(clean) || clean.includes(q.text.toLowerCase().slice(0, 15))
-    );
+    try {
+      const res = await fetch('/api/ai/weather-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: trimmed,
+          locationName,
+          latitude,
+          longitude
+        })
+      });
 
-    if (matched) {
+      const data = await res.json();
+
+      if (res.ok && data.summary) {
+        return {
+          query: data.query || trimmed,
+          summary: data.summary,
+          riskLevel: data.riskLevel || 'Moderate',
+          timing: data.timing || 'Current Window',
+          actionItems: data.actionItems || [],
+          timestamp: data.timestamp || timestamp,
+          sourceDisclaimer: data.sourceDisclaimer || 'Live Open-Meteo telemetry • Grounded by Gemini AI',
+          locationUsed: data.locationUsed,
+          isLive: data.isLive ?? true,
+          needsClarification: data.needsClarification
+        };
+      }
+
+      // Handle server-side handled errors (e.g. 502 Open-Meteo failure or 400 validation)
+      if (data.summary || data.error) {
+        return {
+          query: trimmed,
+          summary: data.summary || data.error || 'Failed to retrieve real-time weather information.',
+          riskLevel: data.riskLevel || 'Moderate',
+          timing: data.timing || 'Unavailable',
+          actionItems: data.actionItems || ['Please retry in a few moments or verify network connection.'],
+          timestamp,
+          sourceDisclaimer: data.sourceDisclaimer || 'Service notification',
+          locationUsed: data.locationUsed || locationName,
+          isLive: false,
+          isError: true
+        };
+      }
+    } catch (apiErr: any) {
+      console.error('[AI Weather Service Error]:', apiErr);
       return {
-        query: prompt,
-        summary: matched.mockAnswer.summary,
-        riskLevel: matched.mockAnswer.riskLevel,
-        timing: matched.mockAnswer.timing,
-        actionItems: matched.mockAnswer.actionItems,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        sourceDisclaimer: 'Simulated WeatherGPT demonstration response • External API integration pending'
+        query: trimmed,
+        summary: `Unable to connect to WeatherGPT server. Live telemetry could not be retrieved from Open-Meteo.`,
+        riskLevel: 'Moderate',
+        timing: 'Connection Error',
+        actionItems: [
+          'Verify server connectivity.',
+          'Retry your query once the connection is restored.'
+        ],
+        timestamp,
+        sourceDisclaimer: 'Connection Error',
+        locationUsed: locationName,
+        isLive: false,
+        isError: true
       };
     }
 
-    // Default intelligent meteorological response
     return {
-      query: prompt,
-      summary: `For ${locationName}, localized atmospheric humidity is currently high (72%) with convective cloud formation detected in eastern and southern sectors. Commuters should prepare for intermittent rain activity.`,
-      riskLevel: 'Moderate',
-      timing: 'Primary convective window: 3:30 PM – 7:30 PM IST',
-      actionItems: [
-        'Check route waterlogging updates before initiating long road commutes.',
-        'Keep rain protection handy if traveling on two-wheelers or foot.',
-        'Monitor hourly forecast updates for rapid localized shifts.'
-      ],
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-      sourceDisclaimer: 'Simulated WeatherGPT demonstration response • External API integration pending'
+      query: trimmed,
+      summary: `Unable to complete query for ${locationName}. Please try again.`,
+      riskLevel: 'Low',
+      timing: 'Unavailable',
+      actionItems: ['Please retry with a specific city name.'],
+      timestamp,
+      sourceDisclaimer: 'WeatherGPT Service',
+      locationUsed: locationName,
+      isLive: false
     };
   }
 };
+
