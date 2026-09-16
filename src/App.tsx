@@ -13,6 +13,9 @@ import { LocationModal } from './components/LocationModal';
 import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { useVoiceCapture } from './hooks/useVoiceCapture';
+import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
+import { LanguageId } from '../languageConfig';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -20,8 +23,36 @@ export default function App() {
   const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>(HOURLY_FORECAST_DATA);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [, setWeatherError] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>('auto');
 
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const voiceContext = {
+    locationName: activeLocation.name,
+    stateName: activeLocation.state,
+    coordinates: activeLocation.coordinates,
+    latitude: activeLocation.latitude,
+    longitude: activeLocation.longitude,
+    liveWeather: buildWeatherGPTLiveWeather(activeLocation) as unknown as Record<string, unknown>,
+    hourlyForecast: hourlyForecast.slice(0, 48).map((item) => ({
+      time: item.forecastTime || item.time,
+      temperatureC: item.temperature,
+      condition: item.condition,
+      rainProbabilityPercent: item.rainProbability
+    })),
+    alert: ACTIVE_ALERT as unknown as Record<string, unknown>,
+    language: selectedLanguage
+  };
+
+  const {
+    isVoiceActive,
+    voiceError,
+    toggleVoiceCapture,
+    clearVoiceError,
+    diagnostics,
+    liveState,
+    liveTranscript,
+    playbackState
+  } = useVoiceCapture(voiceContext);
+
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
@@ -78,10 +109,6 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const handleToggleVoice = () => {
-    setIsVoiceActive((prev) => !prev);
-  };
 
   const handleSelectLocation = (loc: LocationData) => {
     setActiveLocation(loc);
@@ -199,7 +226,7 @@ export default function App() {
               <WeatherHero
                 location={activeLocation}
                 isVoiceActive={isVoiceActive}
-                onToggleVoice={handleToggleVoice}
+                onToggleVoice={toggleVoiceCapture}
                 onOpenLocationModal={() => setIsLocationModalOpen(true)}
                 isLoading={isLoadingWeather}
               />
@@ -218,7 +245,15 @@ export default function App() {
                 latitude={activeLocation.latitude}
                 longitude={activeLocation.longitude}
                 isVoiceActive={isVoiceActive}
-                onToggleVoice={handleToggleVoice}
+                onToggleVoice={toggleVoiceCapture}
+                voiceError={voiceError}
+                onClearVoiceError={clearVoiceError}
+                diagnostics={diagnostics}
+                liveState={liveState}
+                liveTranscript={liveTranscript}
+                playbackState={playbackState}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
               />
 
               {/* Section 4: Today's Hourly Forecast */}

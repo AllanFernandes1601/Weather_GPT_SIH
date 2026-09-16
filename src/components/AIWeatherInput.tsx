@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
 import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
+import { AudioDiagnostics, VoicePlaybackState } from '../hooks/useVoiceCapture';
+import { VoiceTransportState } from '../services/voiceTransport';
+import { LANGUAGE_OPTIONS, LanguageId } from '../../languageConfig';
 
 interface AIWeatherInputProps {
   location: LocationData;
@@ -11,6 +14,14 @@ interface AIWeatherInputProps {
   longitude?: number;
   isVoiceActive: boolean;
   onToggleVoice: () => void;
+  voiceError?: string | null;
+  onClearVoiceError?: () => void;
+  diagnostics?: AudioDiagnostics;
+  liveState?: VoiceTransportState;
+  liveTranscript?: string;
+  playbackState?: VoicePlaybackState;
+  selectedLanguage: LanguageId;
+  onLanguageChange: (language: LanguageId) => void;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
@@ -20,7 +31,15 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   latitude,
   longitude,
   isVoiceActive,
-  onToggleVoice
+  onToggleVoice,
+  voiceError,
+  onClearVoiceError,
+  diagnostics,
+  liveState,
+  liveTranscript,
+  playbackState = 'idle',
+  selectedLanguage,
+  onLanguageChange
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -34,7 +53,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
+      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast, selectedLanguage);
       setActiveResponse(response);
       setQuery(questionText);
     } catch (err) {
@@ -91,14 +110,13 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
         </div>
 
         {/* Voice to Cloud Live Telemetry Indicator Pill */}
-        <div 
+        <div
           id="voice-cloud-status"
           onClick={onToggleVoice}
-          className={`flex items-center gap-3 px-4 py-2 rounded-2xl border shadow-sm backdrop-blur-md transition-all cursor-pointer ${
-            isVoiceActive
+          className={`flex items-center gap-3 px-4 py-2 rounded-2xl border shadow-sm backdrop-blur-md transition-all cursor-pointer ${isVoiceActive
               ? 'bg-amber-100 border-amber-500 ring-2 ring-amber-400/40'
               : 'bg-white/90 border-[#B45309]/30 hover:border-[#B45309]'
-          }`}
+            }`}
           title="Click to toggle Voice Link"
         >
           <div className="flex items-center gap-1.5">
@@ -117,6 +135,28 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
             <span className="w-1 bg-[#D97706] rounded-full wave-bar-3 h-3" />
             <span className="w-1 bg-[#C2410C] rounded-full wave-bar-4 h-3.5" />
           </div>
+        </div>
+
+        <div
+          className="flex items-center gap-2 shrink-0"
+          title={isVoiceActive ? 'Language changes apply when Voice to Cloud is restarted' : 'Choose the WeatherGPT response language'}
+        >
+          <label htmlFor="weathergpt-language" className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+            Language
+          </label>
+          <select
+            id="weathergpt-language"
+            value={selectedLanguage}
+            disabled={isVoiceActive}
+            onChange={(event) => onLanguageChange(event.target.value as LanguageId)}
+            className="max-w-[190px] rounded-xl border border-[#B45309]/30 bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#1C1814] shadow-sm outline-none focus:border-[#B45309] focus:ring-2 focus:ring-[#B45309]/20"
+          >
+            {LANGUAGE_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.displayName}{option.id === 'auto' ? '' : ` — ${option.nativeName}`}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
@@ -149,11 +189,10 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               id="cloud-voice-btn"
               type="button"
               onClick={onToggleVoice}
-              className={`button-ripple-target group relative px-4 sm:px-5 py-3 rounded-2xl border-2 transition-all duration-200 flex items-center gap-2.5 shadow-sm active:scale-95 cursor-pointer ${
-                isVoiceActive
+              className={`button-ripple-target group relative px-4 sm:px-5 py-3 rounded-2xl border-2 transition-all duration-200 flex items-center gap-2.5 shadow-sm active:scale-95 cursor-pointer ${isVoiceActive
                   ? 'bg-[#D97706] text-white border-amber-600 ring-4 ring-[#B45309]/30'
                   : 'bg-amber-500/10 hover:bg-amber-500/20 active:bg-amber-500/30 border-amber-500/40 text-[#B45309] hover:text-amber-900'
-              }`}
+                }`}
               title="Speak to Weather Cloud (English, हिंदी, ಕನ್ನಡ)"
             >
               <div className="relative flex items-center justify-center">
@@ -193,22 +232,107 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
 
         {/* Voice listening active feedback banner */}
         {isVoiceActive && (
-          <div 
+          <div
             id="voice-active-notice"
-            className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-blue-50 to-amber-50 border border-[#B45309]/40 flex items-center justify-between text-[#1C1814] shadow-sm transition-all duration-300"
+            className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-blue-50 to-amber-50 border border-[#B45309]/40 flex flex-col sm:flex-row sm:items-center justify-between text-[#1C1814] shadow-sm transition-all duration-300 gap-2.5"
           >
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-[#B45309] text-[22px] animate-pulse">
                 sensors
               </span>
-              <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309]">
-                Listening to voice... Analyzing atmospheric cloud data for {location.name} Urban
+              <div>
+                <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309] block">
+                  {liveState === 'connecting'
+                    ? 'Connecting to Gemini Live voice session...'
+                    : playbackState === 'receiving'
+                      ? 'Receiving Gemini audio...'
+                      : playbackState === 'speaking'
+                        ? 'Gemini Speaking...'
+                        : liveState === 'connected' || liveState === 'sending'
+                          ? `Gemini Live Connected • Listening for ${location.name} Urban`
+                          : `Listening to voice... Processing microphone audio for ${location.name} Urban`}
+                </span>
+                {diagnostics && diagnostics.processingActive && (
+                  <div className="flex items-center gap-2 mt-1 text-[11px] font-medium text-[#78350F] flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-200/60 border border-amber-300">
+                      16 kHz PCM Mono
+                    </span>
+                    <span>•</span>
+                    <span>Chunks: <strong className="text-[#1C1814]">{diagnostics.chunkCount}</strong></span>
+                    <span>•</span>
+                    <span>PCM: <strong className="text-[#1C1814]">{(diagnostics.byteCount / 1024).toFixed(1)} KB</strong></span>
+                    <span>•</span>
+                    <span>Input: <strong className="text-[#1C1814]">{(diagnostics.inputSampleRate / 1000).toFixed(1)} kHz</strong></span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <span>Level:</span>
+                      <span className="inline-block w-12 h-2 bg-amber-200 rounded-full overflow-hidden border border-amber-300">
+                        <span
+                          className="block h-full bg-[#B45309] transition-all duration-75"
+                          style={{ width: `${Math.min(100, Math.round(diagnostics.rmsLevel * 300))}%` }}
+                        />
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase shrink-0">
+              <span>
+                {liveState === 'connecting'
+                  ? 'Connecting Session'
+                  : playbackState === 'receiving'
+                    ? 'Receiving Gemini Audio'
+                    : playbackState === 'speaking'
+                      ? 'Gemini Speaking'
+                      : liveState === 'connected'
+                        ? 'Gemini Live Ready'
+                        : liveState === 'sending'
+                          ? 'Sending Audio'
+                          : 'Local Audio Pipeline Active'}
               </span>
+              <span className={`w-2 h-2 rounded-full ${liveState === 'connected' || liveState === 'sending' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
             </div>
-            <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase">
-              <span>Synoptic Cloud Stream Active</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+        )}
+
+        {/* Real-time Gemini transcription card */}
+        {isVoiceActive && liveTranscript && (
+          <div
+            id="gemini-live-transcript-card"
+            className="mt-3 p-4 rounded-2xl bg-[#FFFDF9] border border-amber-300/80 shadow-sm text-[#1C1814]"
+          >
+            <div className="flex items-center gap-2 mb-1.5 text-[11px] font-bold uppercase text-[#B45309]">
+              <span className="material-symbols-outlined text-[16px]">record_voice_over</span>
+              <span>Gemini Live Response:</span>
             </div>
+            <p className="text-[14px] leading-relaxed text-[#1C1814] font-medium">
+              {liveTranscript}
+            </p>
+          </div>
+        )}
+
+        {voiceError && (
+          <div
+            id="voice-error-notice"
+            className="mt-3 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-[13px] font-semibold text-rose-800 flex items-center justify-between gap-3 shadow-sm"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-rose-600 text-[20px]">
+                mic_off
+              </span>
+              <span>{voiceError}</span>
+            </div>
+            {onClearVoiceError && (
+              <button
+                type="button"
+                onClick={onClearVoiceError}
+                className="p-1 text-rose-600 hover:text-rose-900 rounded-lg transition-colors cursor-pointer"
+                title="Dismiss error"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            )}
           </div>
         )}
 
@@ -220,7 +344,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
 
         {/* Conversational AI Response Card when query answered */}
         {activeResponse && (
-          <div 
+          <div
             id="ai-response-card"
             className="mt-4 p-5 rounded-2xl bg-[#FFFDF9] border-2 border-amber-400 shadow-md transition-all duration-300"
           >
@@ -244,23 +368,22 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
 
               <div className="flex items-center gap-2">
                 <span
-                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${
-                    activeResponse.isError
+                  className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase ${activeResponse.isError
                       ? 'bg-rose-100 text-rose-800 border border-rose-200'
                       : activeResponse.needsClarification
-                      ? 'bg-blue-100 text-blue-800 border border-blue-200'
-                      : activeResponse.riskLevel === 'High'
-                      ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                      : activeResponse.riskLevel === 'Moderate'
-                      ? 'bg-amber-100 text-amber-900 border border-amber-300'
-                      : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
-                  }`}
+                        ? 'bg-blue-100 text-blue-800 border border-blue-200'
+                        : activeResponse.riskLevel === 'High'
+                          ? 'bg-rose-100 text-rose-800 border border-rose-200'
+                          : activeResponse.riskLevel === 'Moderate'
+                            ? 'bg-amber-100 text-amber-900 border border-amber-300'
+                            : 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                    }`}
                 >
                   {activeResponse.isError
                     ? 'Service Notice'
                     : activeResponse.needsClarification
-                    ? 'Clarify Location'
-                    : `${activeResponse.riskLevel} Risk`}
+                      ? 'Clarify Location'
+                      : `${activeResponse.riskLevel} Risk`}
                 </span>
                 <button
                   type="button"
@@ -318,7 +441,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
 
             <div className="mt-3 pt-2 border-t border-[#E5DCCF] flex items-center justify-between text-[11px] text-[#8E9197]">
               <span>{activeResponse.sourceDisclaimer}</span>
-<span className="font-semibold text-[#B45309]">Live Open-Meteo + Gemini + structured retrieval</span>
+              <span className="font-semibold text-[#B45309]">Live Open-Meteo + Gemini + structured retrieval</span>
             </div>
           </div>
         )}
@@ -337,7 +460,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
             <span className="material-symbols-outlined text-[15px] text-emerald-600">
               verified
             </span>
-Live weather telemetry and cleaned historical evidence
+            Live weather telemetry and cleaned historical evidence
           </span>
         </div>
 
@@ -347,9 +470,8 @@ Live weather telemetry and cleaned historical evidence
               key={q.id}
               type="button"
               onClick={() => handleChipClick(q)}
-              className={`interactive-card group flex items-center gap-3 p-3.5 rounded-2xl bg-[#FFFDF9] hover:bg-amber-50/80 active:scale-[0.98] text-left text-[#1C1814] border border-[#E5DCCF]/80 hover:border-[#B45309] shadow-sm cursor-pointer ${
-                q.colSpan || ''
-              }`}
+              className={`interactive-card group flex items-center gap-3 p-3.5 rounded-2xl bg-[#FFFDF9] hover:bg-amber-50/80 active:scale-[0.98] text-left text-[#1C1814] border border-[#E5DCCF]/80 hover:border-[#B45309] shadow-sm cursor-pointer ${q.colSpan || ''
+                }`}
             >
               <span
                 className={`text-2xl shrink-0 p-2 rounded-xl ${q.bgClass} border ${q.borderClass} group-hover:scale-110 transition-transform`}
