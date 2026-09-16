@@ -388,6 +388,16 @@ export const SUGGESTED_QUESTIONS: SuggestedQuestion[] = [
 
 export const EXPLORE_SECTIONS = [
   {
+    id: 'risks',
+    title: 'Risk Intelligence',
+    description: 'Explainable rain, heat, wind, flood-susceptibility and AQI assessments with a scenario simulator.',
+    icon: 'crisis_alert',
+    badge: 'Live + Simulation',
+    badgeColor: 'bg-orange-50 text-orange-800 border-orange-200',
+    accentColor: 'text-orange-600',
+    route: 'risks' as const
+  },
+  {
     id: 'forecast',
     title: 'Extended Forecast',
     description: '7-Day Synoptic outlook with probabilistic precipitation & temperature gradients.',
