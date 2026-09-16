@@ -212,7 +212,8 @@ export default function App() {
 
               {/* Section 3: Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
               <AIWeatherInput
-                locationName={activeLocation.name}
+                location={activeLocation}
+                hourlyForecast={hourlyForecast}
                 isVoiceActive={isVoiceActive}
                 onToggleVoice={handleToggleVoice}
               />
