@@ -1,6 +1,7 @@
 import React from 'react';
 import { NavTab, LocationData } from '../types';
 import { ACTIVE_ALERT } from '../data/mockWeatherData';
+import { SafetyHub } from '../components/SafetyHub';
 
 interface PlaceholderPageProps {
   tab: NavTab;
@@ -148,33 +149,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
           subtitle: 'Emergency mitigation checklists, district helpline directories, and flood evasion protocols',
           icon: 'health_and_safety',
           tag: 'Civil Defense',
-          content: (
-            <div className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
-                  <span className="material-symbols-outlined text-[#EA580C] text-[24px]">phone_in_talk</span>
-                  <h5 className="font-bold text-[15px] text-[#1C1814]">Disaster Helplines</h5>
-                  <p className="text-[12px] text-[#6E645A]">State Disaster Response: 1070</p>
-                  <p className="text-[12px] text-[#6E645A]">National Emergency Number: 112</p>
-                  <p className="text-[12px] text-[#6E645A]">Local Municipal Control: 1533</p>
-                </div>
-                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
-                  <span className="material-symbols-outlined text-blue-600 text-[24px]">water</span>
-                  <h5 className="font-bold text-[15px] text-[#1C1814]">Urban Flood Evasion</h5>
-                  <p className="text-[12px] text-[#6E645A]">Never drive or walk through moving water.</p>
-                  <p className="text-[12px] text-[#6E645A]">6 inches of moving water can knock you down.</p>
-                  <p className="text-[12px] text-[#6E645A]">Elevate home electronics in low-lying corridors.</p>
-                </div>
-                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
-                  <span className="material-symbols-outlined text-emerald-600 text-[24px]">medical_services</span>
-                  <h5 className="font-bold text-[15px] text-[#1C1814]">Emergency Kit Checklist</h5>
-                  <p className="text-[12px] text-[#6E645A]">Waterproof flashlight &amp; extra batteries.</p>
-                  <p className="text-[12px] text-[#6E645A]">3-day drinking water ration (3L/person/day).</p>
-                  <p className="text-[12px] text-[#6E645A]">Personal prescription medicines &amp; first aid kit.</p>
-                </div>
-              </div>
-            </div>
-          )
+          content: <SafetyHub />
         };
       default:
         return {
