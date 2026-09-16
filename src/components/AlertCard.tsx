@@ -40,10 +40,8 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onViewAlert }) => {
 
           {/* Alert Description */}
           <p className="text-[14px] sm:text-[15px] text-[#6E645A] max-w-4xl leading-relaxed">
-            Localized convective cloud burst expected between{' '}
-            <strong className="text-[#1C1814] font-semibold">{alert.timeWindow}</strong>.
-            Potential waterlogging on Outer Ring Road, Bellandur, and Whitefield transit corridors.
-            Commuters are advised to pace travel times.
+            {alert.description}{' '}
+            <strong className="text-[#1C1814] font-semibold">{alert.timeWindow}</strong>
           </p>
         </div>
 
@@ -55,7 +53,7 @@ export const AlertCard: React.FC<AlertCardProps> = ({ alert, onViewAlert }) => {
             onClick={onViewAlert}
             className="group w-full lg:w-auto px-5 py-2.5 rounded-full bg-amber-50 hover:bg-amber-100 text-[#B45309] border border-amber-200/80 text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 shadow-sm hover:shadow active:scale-95 cursor-pointer"
           >
-            <span>View Full Alert &amp; Route Precautions</span>
+            <span>View Demo Scenario &amp; Precautions</span>
             <span className="material-symbols-outlined text-[18px] transition-transform duration-200 group-hover:translate-x-1.5">
               arrow_forward
             </span>

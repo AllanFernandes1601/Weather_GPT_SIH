@@ -240,6 +240,52 @@ def heatwave_history(connection: sqlite3.Connection, payload: dict[str, Any]) ->
     return {"query": {"region": region, "year": year}, "records": matches}
 
 
+def resolve_location(connection: sqlite3.Connection, payload: dict[str, Any]) -> dict[str, Any]:
+    text = require_text(payload, "text")
+    normalized_text = f" {normalize_place(text)} "
+    candidates: dict[tuple[str, str], dict[str, Any]] = {}
+
+    queries = [
+        ("city", "SELECT DISTINCT city AS name, NULL AS state FROM weather_longterm WHERE city IS NOT NULL"),
+        ("station", "SELECT DISTINCT station_name AS name, state FROM weather_detailed WHERE station_name IS NOT NULL"),
+        ("district", "SELECT DISTINCT district AS name, state FROM weather_detailed WHERE district IS NOT NULL"),
+        ("state", "SELECT DISTINCT state AS name, state FROM weather_detailed WHERE state IS NOT NULL"),
+        ("district", "SELECT DISTINCT district_name AS name, state_name AS state FROM flood_dfsi WHERE district_name IS NOT NULL"),
+        ("heatwave_region", "SELECT DISTINCT region_name AS name, NULL AS state FROM heatwave_days WHERE region_name IS NOT NULL"),
+    ]
+    for kind, sql in queries:
+        for row in connection.execute(sql):
+            name = row["name"]
+            normalized = normalize_place(name or "")
+            if not normalized or len(normalized) < 3:
+                continue
+            key = (normalized, kind)
+            candidates[key] = {"name": name, "kind": kind, "state": row["state"], "normalized": normalized}
+
+    aliases = {
+        "bangalore": {"name": "Bengaluru", "kind": "city", "state": "Karnataka", "normalized": "bangalore"},
+        "bombay": {"name": "Mumbai", "kind": "city", "state": "Maharashtra", "normalized": "bombay"},
+        "calcutta": {"name": "Kolkata", "kind": "city", "state": "West Bengal", "normalized": "calcutta"},
+        "madras": {"name": "Chennai", "kind": "city", "state": "Tamil Nadu", "normalized": "madras"},
+        "orissa": {"name": "Odisha", "kind": "state", "state": "Odisha", "normalized": "orissa"},
+    }
+    candidates.update({(key, "alias"): value for key, value in aliases.items()})
+
+    matches = [
+        candidate for candidate in candidates.values()
+        if f" {candidate['normalized']} " in normalized_text
+    ]
+    if not matches:
+        return {"query": {"text": text}, "match": None}
+
+    priority = {"district": 5, "station": 4, "city": 3, "state": 2, "heatwave_region": 1}
+    match = max(matches, key=lambda item: (len(item["normalized"]), priority.get(item["kind"], 0)))
+    return {
+        "query": {"text": text},
+        "match": {"name": match["name"], "kind": match["kind"], "state": match["state"]},
+    }
+
+
 HANDLERS = {
     "historical_weather": historical_weather,
     "climate_baseline": climate_baseline,
@@ -247,6 +293,7 @@ HANDLERS = {
     "flood_history": flood_history,
     "district_flood_metrics": district_flood_metrics,
     "heatwave_history": heatwave_history,
+    "resolve_location": resolve_location,
 }
 
 

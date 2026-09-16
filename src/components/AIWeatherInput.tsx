@@ -279,6 +279,26 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
               </ul>
             </div>
 
+            {activeResponse.sources?.length > 0 && (
+              <div className="mt-3 p-3 rounded-xl bg-white/70 border border-[#E5DCCF]">
+                <span className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+                  Sources used
+                </span>
+                <ul className="mt-1.5 space-y-1 text-[11px] text-[#6E645A]">
+                  {activeResponse.sources.map((source) => (
+                    <li key={source} className="flex items-start gap-1.5 break-all">
+                      <span aria-hidden="true">↳</span>
+                      {source.startsWith('http') ? (
+                        <a href={source} target="_blank" rel="noreferrer" className="text-[#B45309] underline">
+                          {source}
+                        </a>
+                      ) : <span>{source}</span>}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
             <div className="mt-3 pt-2 border-t border-[#E5DCCF] flex items-center justify-between text-[11px] text-[#8E9197]">
               <span>{activeResponse.sourceDisclaimer}</span>
               <span className="font-semibold text-[#B45309]">Gemini + structured retrieval</span>

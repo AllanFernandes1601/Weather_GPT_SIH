@@ -1,3 +1,5 @@
+import { HourlyForecastItem, LocationData } from '../types';
+
 export interface AIResponse {
   query: string;
   summary: string;
@@ -6,6 +8,7 @@ export interface AIResponse {
   actionItems: string[];
   timestamp: string;
   sourceDisclaimer: string;
+  sources: string[];
 }
 
 export const aiWeatherService = {
@@ -55,4 +58,3 @@ export const aiWeatherService = {
     return payload as AIResponse;
   }
 };
-import { HourlyForecastItem, LocationData } from '../types';

@@ -51,6 +51,7 @@ interface WeatherGPTAnswer {
   actionItems: string[];
   timestamp: string;
   sourceDisclaimer: string;
+  sources: string[];
 }
 
 app.use(express.json());
@@ -185,16 +186,6 @@ const MONTHS: Record<string, number> = {
   july: 7, august: 8, september: 9, october: 10, november: 11, december: 12
 };
 
-const INDIA_REGIONS = [
-  'Andhra Pradesh', 'Arunachal Pradesh', 'Assam', 'Bihar', 'Chhattisgarh', 'Goa',
-  'Gujarat', 'Haryana', 'Himachal Pradesh', 'Jharkhand', 'Karnataka', 'Kerala',
-  'Madhya Pradesh', 'Maharashtra', 'Manipur', 'Meghalaya', 'Mizoram', 'Nagaland',
-  'Odisha', 'Punjab', 'Rajasthan', 'Sikkim', 'Tamil Nadu', 'Telangana', 'Tripura',
-  'Uttar Pradesh', 'Uttarakhand', 'West Bengal', 'Andaman and Nicobar Islands',
-  'Chandigarh', 'Dadra and Nagar Haveli and Daman and Diu', 'Delhi',
-  'Jammu and Kashmir', 'Ladakh', 'Lakshadweep', 'Puducherry'
-];
-
 function extractYear(text: string): number | undefined {
   const match = text.match(/\b(?:19|20)\d{2}\b/);
   return match ? Number(match[0]) : undefined;
@@ -206,9 +197,49 @@ function extractMonth(text: string): number {
   return month?.[1] || new Date().getMonth() + 1;
 }
 
-function resolveDataLocation(prompt: string, selectedLocation: string): string {
-  const normalized = prompt.toLowerCase();
-  return INDIA_REGIONS.find(region => normalized.includes(region.toLowerCase())) || selectedLocation;
+async function resolveDataLocation(prompt: string, selectedLocation: string): Promise<string> {
+  try {
+    const response = await runRagQuery({ action: 'resolve_location', text: prompt });
+    const result = response.result as { match?: { name?: unknown } | null } | undefined;
+    return typeof result?.match?.name === 'string' ? result.match.name : selectedLocation;
+  } catch {
+    return selectedLocation;
+  }
+}
+
+function collectEvidenceSources(
+  evidence: Array<{ action?: string; result?: unknown }>,
+  hasLiveWeather: boolean
+): string[] {
+  const sources = new Set<string>();
+  const actionLabels: Record<string, string> = {
+    historical_weather: 'Cleaned historical weather records',
+    climate_baseline: 'WeatherGPT 2000–2024 climate baseline',
+    cyclone_history: 'Cleaned IMD cyclone best-track workbook',
+    flood_history: 'Cleaned India Flood Inventory',
+    district_flood_metrics: 'Cleaned district flood metrics',
+    heatwave_history: 'Rajya Sabha heatwave-days dataset'
+  };
+  const visit = (value: unknown) => {
+    if (Array.isArray(value)) {
+      value.forEach(visit);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    for (const [key, child] of Object.entries(value as Record<string, unknown>)) {
+      if (typeof child === 'string' && ['source_file', 'source_reference', 'source_url', 'event_source'].includes(key)) {
+        sources.add(child);
+      } else {
+        visit(child);
+      }
+    }
+  };
+  for (const item of evidence) {
+    if (item.action && actionLabels[item.action]) sources.add(actionLabels[item.action]);
+    visit(item.result);
+  }
+  if (hasLiveWeather) sources.add('Open-Meteo live weather and hourly forecast');
+  return [...sources].slice(0, 10);
 }
 
 function parseGeminiJson(text: string): Record<string, unknown> {
@@ -237,15 +268,16 @@ function normalizeGeminiAnswer(
     actionItems: actionItems.length ? actionItems : ['Check official local advisories before making safety decisions.'],
     timestamp: new Date().toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata' }),
     sourceDisclaimer: sources.length
-      ? `Gemini answer grounded in cleaned WeatherGPT data: ${sources.join(', ')}. Historical data is not a live warning.`
-      : 'No matching WeatherGPT dataset evidence was found. Treat this as general guidance, not a live warning.'
+      ? `Grounded in ${sources.length} retrieved source${sources.length === 1 ? '' : 's'}. Historical records are not live warnings.`
+      : 'No matching WeatherGPT dataset evidence was found. Treat this as general guidance, not a live warning.',
+    sources
   };
 }
 
 async function retrieveAssistantEvidence(prompt: string, location: string) {
   const lower = prompt.toLowerCase();
   const year = extractYear(prompt);
-  const dataLocation = resolveDataLocation(prompt, location);
+  const dataLocation = await resolveDataLocation(prompt, location);
   const requests: Record<string, unknown>[] = [];
 
   if (/flood|flooding|waterlog|inundat/.test(lower)) {
@@ -269,11 +301,11 @@ async function retrieveAssistantEvidence(prompt: string, location: string) {
 
   const date = prompt.match(/\b\d{4}-\d{2}-\d{2}\b/)?.[0];
   if (date) {
-    requests.push({ action: 'historical_weather', location, date, limit: 50 });
+    requests.push({ action: 'historical_weather', location: dataLocation, date, limit: 50 });
   }
 
   if (!requests.length || /weather|rain|temperature|climate|usual|normal|monsoon/.test(lower)) {
-    requests.push({ action: 'climate_baseline', location, month: extractMonth(prompt) });
+    requests.push({ action: 'climate_baseline', location: dataLocation, month: extractMonth(prompt) });
   }
 
   const settled = await Promise.allSettled(requests.map(request => runRagQuery(request)));
@@ -303,10 +335,10 @@ app.post('/api/ai/weather', async (req, res) => {
     const hourlyForecast = Array.isArray(req.body?.hourlyForecast)
       ? req.body.hourlyForecast.slice(0, 12)
       : [];
-    const sources = [...new Set([
-      ...evidence.map(item => item.action).filter((item): item is string => Boolean(item)),
-      ...(liveWeather ? ['Open-Meteo live weather'] : [])
-    ])];
+    const asksForHistoricalData = /historical|recorded|past|\b(?:19|20)\d{2}\b/i.test(prompt);
+    const asksForLiveWeather = /today|current|now|tomorrow|forecast|rain|weather|commute|umbrella|temperature/i.test(prompt);
+    const includeLiveEvidence = Boolean(liveWeather) && asksForLiveWeather && !asksForHistoricalData;
+    const sources = collectEvidenceSources(evidence, includeLiveEvidence);
     const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
     const generationRequest = {
       model: process.env.GEMINI_MODEL || 'gemini-3.6-flash',
@@ -314,8 +346,8 @@ app.post('/api/ai/weather', async (req, res) => {
         question: prompt,
         selectedLocation: location,
         retrievalEvidence: evidence,
-        liveWeather,
-        hourlyForecast
+        liveWeather: includeLiveEvidence ? liveWeather : null,
+        hourlyForecast: includeLiveEvidence ? hourlyForecast : []
       }),
       config: {
         responseMimeType: 'application/json',

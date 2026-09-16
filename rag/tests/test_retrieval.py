@@ -51,6 +51,8 @@ class RetrievalTests(unittest.TestCase):
         result = query("flood_history", state="Assam", year=2020, limit=500)
         self.assertTrue(result["events"])
         self.assertTrue(all("assam" in row["state"].lower() for row in result["events"]))
+        self.assertEqual(result["events"][1]["start_date"], "2020-06-01")
+        self.assertEqual(result["events"][1]["start_date_raw"], "06-01-2020 00:00")
 
     def test_ambiguous_district_is_not_silently_joined(self):
         result = query("district_flood_metrics", district="Aurangabad")
@@ -61,6 +63,19 @@ class RetrievalTests(unittest.TestCase):
         result = query("heatwave_history", region="All Total", year=2024)
         self.assertEqual(len(result["records"]), 1)
         self.assertEqual(result["records"][0]["heatwave_days"], 554)
+
+    def test_location_resolver_finds_district(self):
+        result = query("resolve_location", text="Show flood history for Kamrup district")
+        self.assertEqual(result["match"]["name"], "Kamrup")
+        self.assertEqual(result["match"]["kind"], "district")
+
+    def test_location_resolver_uses_legacy_city_alias(self):
+        result = query("resolve_location", text="Will it rain in Bombay?")
+        self.assertEqual(result["match"]["name"], "Mumbai")
+
+    def test_location_resolver_returns_none_for_unknown_place(self):
+        result = query("resolve_location", text="weather for Atlantis")
+        self.assertIsNone(result["match"])
 
 
 if __name__ == "__main__":

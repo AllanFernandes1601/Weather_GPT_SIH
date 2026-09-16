@@ -1,6 +1,6 @@
 # WeatherGPT structured retrieval
 
-The RAG data layer uses SQLite for the prototype so it can run locally without a PostgreSQL service or another Node dependency. Numerical weather and disaster records are queried with SQL; they are not embedded as documents.
+The RAG data layer uses SQLite for the prototype so it can run locally without a PostgreSQL service or another Node dependency. Numerical weather and disaster records are queried with SQL; they are not embedded as documents. City, district, state, station, and heatwave-region names are resolved against the database before retrieval.
 
 ## Build the local database
 
@@ -30,6 +30,7 @@ Supported actions:
 - `flood_history`
 - `district_flood_metrics`
 - `heatwave_history`
+- `resolve_location`
 
 ## API routes
 
@@ -43,10 +44,13 @@ After starting the application with `npm run dev`, the same retrieval layer is a
 - `GET /api/rag/district-flood-metrics`
 - `GET /api/rag/heatwaves`
 
-Every response retains source filename/row provenance. Ambiguous same-named flood districts are returned with a warning rather than silently joined.
+Every response retains source filename/row provenance. Gemini answers expose the source filenames, official references, and source URLs found in retrieved rows. Ambiguous same-named flood districts are returned with a warning rather than silently joined.
 
 ## Test
 
 ```bash
-python3 -m unittest rag/tests/test_retrieval.py -v
+npm run rag:test
+npm run rag:evaluate
 ```
+
+The focused tests cover retrieval behavior and provenance. The deterministic evaluation suite contains 43 known-answer cases across all retrieval families.
