@@ -105,6 +105,8 @@ export interface SmsMessagePayload {
   severity?: AlertSeverity;
   senderId?: string;
   templateId?: string;
+  templateVariables?: Record<string, string>;
+  preferredLanguage?: PreferredLanguage;
 }
 
 /**

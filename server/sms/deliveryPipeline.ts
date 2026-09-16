@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { SmsSubscription, WeatherAlert, SmsDeliveryRecord, maskPhoneNumber } from './types';
 import { SmsProvider } from './providers/smsProvider.interface';
-import { getSmsProvider } from './providers';
+import { getSmsProvider, createWeatherAlertTemplateVariables } from './providers';
 import { ISmsSubscriptionStorage, ISmsDeliveryStorage } from './storage/storage.interface';
 import { getSubscriptionStorage, getDeliveryStorage } from './storage';
 import { evaluateSubscriptionEligibility, SubscriberMatchOptions } from './subscriberMatcher';
@@ -114,20 +114,23 @@ export async function processAlertDelivery(
     }
 
     // 4. SMS Dispatch via SmsProvider (full number passed ONLY to provider interface)
+    const templateVariables = createWeatherAlertTemplateVariables(alert, sub);
     let sendResult;
     try {
       sendResult = await smsProvider.sendSms({
         to: sub.phoneNumber,
         body: alert.smsText,
         alertType: alert.alertType,
-        severity: alert.severity
+        severity: alert.severity,
+        templateVariables,
+        preferredLanguage: sub.preferredLanguage
       });
     } catch (err: any) {
       sendResult = {
         success: false,
         provider: smsProvider.providerName,
         error: err?.message || 'Unexpected provider dispatch error',
-        deliveredAt: new Date().toISOString()
+        timestamp: new Date().toISOString()
       };
     }
 
