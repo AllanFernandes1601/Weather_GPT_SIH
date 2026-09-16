@@ -2,6 +2,7 @@ import React from 'react';
 import { NavTab, LocationData } from '../types';
 import { ACTIVE_ALERT } from '../data/mockWeatherData';
 import { SafetyHub } from '../components/SafetyHub';
+import { SmsAlertSubscription } from '../components/SmsAlertSubscription';
 
 interface PlaceholderPageProps {
   tab: NavTab;
@@ -100,11 +101,14 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                 <button
                   type="button"
                   onClick={onOpenAlertModal}
-                  className="px-5 py-2.5 rounded-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold text-[13px] transition-colors"
+                  className="px-5 py-2.5 rounded-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold text-[13px] transition-colors cursor-pointer"
                 >
                   View Route Precautions &amp; Evacuation Guidelines
                 </button>
               </div>
+
+              {/* Real-time SMS Weather Alert Registration */}
+              <SmsAlertSubscription activeLocation={location} />
             </div>
           )
         };

@@ -12,6 +12,7 @@ import { ExploreSection } from './components/ExploreSection';
 import { LocationModal } from './components/LocationModal';
 import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
+import { SmsAlertSubscription } from './components/SmsAlertSubscription';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 
 export default function App() {
@@ -208,6 +209,12 @@ export default function App() {
               <AlertCard
                 alert={ACTIVE_ALERT}
                 onViewAlert={() => setIsAlertModalOpen(true)}
+              />
+
+              {/* Section 2.5: Location-Aware SMS Weather Alert Subscription */}
+              <SmsAlertSubscription
+                activeLocation={activeLocation}
+                onOpenLocationModal={() => setIsLocationModalOpen(true)}
               />
 
               {/* Section 3: Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
