@@ -16,6 +16,7 @@ import { PlaceholderPage } from './pages/PlaceholderPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
 import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
 import { LanguageId } from '../languageConfig';
+import { RisksPage } from './pages/RisksPage';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -268,6 +269,11 @@ export default function App() {
               {/* Section 6: Explore & Specialized Weather Sections */}
               <ExploreSection onNavigate={(tab) => setCurrentTab(tab)} />
             </div>
+          ) : currentTab === 'risks' ? (
+            <RisksPage
+              location={activeLocation}
+              onBackToHome={() => setCurrentTab('home')}
+            />
           ) : (
             <PlaceholderPage
               tab={currentTab}

@@ -218,3 +218,76 @@
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
+
+/* Risk intelligence motion: live data breathes; simulator motion is input-driven only. */
+@keyframes riskLiveBreathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0.08); }
+  50% { box-shadow: 0 0 24px 3px rgba(217, 119, 6, 0.18); }
+}
+
+@keyframes riskGaugeBreathe {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(217, 119, 6, 0)); }
+  50% { filter: drop-shadow(0 7px 10px rgba(217, 119, 6, 0.18)); }
+}
+
+@keyframes riskConnectionTravel {
+  0% { opacity: 0; transform: translate(-50%, -24px) scaleY(0.15); }
+  30% { opacity: 0.75; }
+  100% { opacity: 0; transform: translate(-50%, 88px) scaleY(1); }
+}
+
+@keyframes riskSliderFlash {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(217, 119, 6, 0); }
+  40% { box-shadow: 0 0 0 5px rgba(217, 119, 6, 0.16); }
+}
+
+.risk-gauge-needle {
+  transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.risk-contribution-fill {
+  transition: width 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: width;
+}
+
+.risk-live-badge,
+.risk-card-live-highest {
+  animation: riskLiveBreathe 2.8s ease-in-out infinite;
+}
+
+.risk-gauge-live-highlight {
+  animation: riskGaugeBreathe 2.8s ease-in-out infinite;
+}
+
+.risk-slider-pulse {
+  animation: riskSliderFlash 520ms ease-out;
+}
+
+.risk-connection-pulse {
+  position: absolute;
+  z-index: 5;
+  top: -18px;
+  left: 50%;
+  width: 3px;
+  height: 58px;
+  border-radius: 999px;
+  pointer-events: none;
+  transform-origin: top;
+  background: linear-gradient(to bottom, rgba(217, 119, 6, 0), rgba(217, 119, 6, 0.85));
+  animation: riskConnectionTravel 720ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .risk-gauge-needle,
+  .risk-contribution-fill {
+    transition-duration: 1ms;
+  }
+  .risk-live-badge,
+  .risk-card-live-highest,
+  .risk-gauge-live-highlight,
+  .risk-slider-pulse,
+  .risk-connection-pulse {
+    animation: none;
+  }
+}
