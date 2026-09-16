@@ -104,13 +104,33 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
   );
 
   const handleAnswer = (field: QuestionField, value: string | boolean | undefined) => {
-    const nextProfile = { ...profile } as AssistanceUserProfile & Record<QuestionField, string | boolean | undefined>;
-    if (value === undefined) {
-      delete nextProfile[field];
-    } else {
-      nextProfile[field] = value;
+    switch (field) {
+      case 'farmerStatus':
+        if (value === undefined || value === 'farmer' || value === 'not_farmer') {
+          onChange({ ...profile, farmerStatus: value });
+        }
+        break;
+      case 'cropInsuranceStatus':
+        if (value === undefined || value === 'insured' || value === 'not_insured' || value === 'unknown') {
+          onChange({ ...profile, cropInsuranceStatus: value });
+        }
+        break;
+      case 'cropNotifiedStatus':
+        if (value === undefined || value === 'notified' || value === 'not_notified' || value === 'unknown') {
+          onChange({ ...profile, cropNotifiedStatus: value });
+        }
+        break;
+      case 'notifiedAreaStatus':
+        if (value === undefined || value === 'notified' || value === 'not_notified' || value === 'unknown') {
+          onChange({ ...profile, notifiedAreaStatus: value });
+        }
+        break;
+      case 'coveredPerilStatus':
+        if (value === undefined || value === 'covered' || value === 'not_covered' || value === 'unknown') {
+          onChange({ ...profile, coveredPerilStatus: value });
+        }
+        break;
     }
-    onChange(nextProfile);
   };
 
   return (
