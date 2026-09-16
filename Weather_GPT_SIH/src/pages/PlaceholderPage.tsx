@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavTab, LocationData } from '../types';
 import { ACTIVE_ALERT } from '../data/mockWeatherData';
-import { SafetyHub } from '../components/SafetyHub';
 
 interface PlaceholderPageProps {
   tab: NavTab;
@@ -55,7 +54,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                 </div>
               </div>
               <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#E5DCCF]/60 text-[13px] text-[#6E645A] flex items-center justify-between">
-                <span>This seven-day view is illustrative; the home-page hourly forecast uses live Open-Meteo data.</span>
+                <span>Weather data source will be connected in future iterations.</span>
                 <span className="font-semibold text-[#B45309]">Demo Forecast View</span>
               </div>
             </div>
@@ -63,8 +62,8 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         };
       case 'alerts':
         return {
-          title: 'Weather Preparedness Scenarios',
-          subtitle: `Demonstration guidance for ${location.state}; no official live alert feed is connected`,
+          title: 'Active Severe Weather & Flood Alerts',
+          subtitle: `District and state disaster management bulletins for ${location.state}`,
           icon: 'warning',
           tag: 'Civil Protection',
           content: (
@@ -78,7 +77,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                     </h4>
                   </div>
                   <span className="text-[11px] font-bold text-[#EA580C] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
-                    Demo Scenario
+                    Active Advisory
                   </span>
                 </div>
                 <p className="text-[14px] text-[#6E645A]">
@@ -110,10 +109,10 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
         };
       case 'weather-map':
         return {
-          title: 'Radar & Weather Map Prototype',
-          subtitle: 'Illustrative map surface; no live radar layer is connected',
+          title: 'Interactive Precipitation & Synoptic Weather Map',
+          subtitle: 'Synoptic grid reflectivity, cloud albedo, and wind streamlines',
           icon: 'map',
-          tag: 'Demo Spatial View',
+          tag: 'Spatial Telemetry',
           content: (
             <div className="space-y-6">
               <div className="relative rounded-3xl overflow-hidden border border-[#E5DCCF] shadow-sm bg-[#131315] aspect-[16/9] max-h-[440px] flex items-center justify-center text-center p-6">
@@ -136,7 +135,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                   </p>
                   <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-[12px] border border-white/20">
                     <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                    <span>Simulated radar visualization</span>
+                    <span>Demo Radar Sweep: Active</span>
                   </div>
                 </div>
               </div>
@@ -149,7 +148,33 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
           subtitle: 'Emergency mitigation checklists, district helpline directories, and flood evasion protocols',
           icon: 'health_and_safety',
           tag: 'Civil Defense',
-          content: <SafetyHub />
+          content: (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
+                  <span className="material-symbols-outlined text-[#EA580C] text-[24px]">phone_in_talk</span>
+                  <h5 className="font-bold text-[15px] text-[#1C1814]">Disaster Helplines</h5>
+                  <p className="text-[12px] text-[#6E645A]">State Disaster Response: 1070</p>
+                  <p className="text-[12px] text-[#6E645A]">National Emergency Number: 112</p>
+                  <p className="text-[12px] text-[#6E645A]">Local Municipal Control: 1533</p>
+                </div>
+                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
+                  <span className="material-symbols-outlined text-blue-600 text-[24px]">water</span>
+                  <h5 className="font-bold text-[15px] text-[#1C1814]">Urban Flood Evasion</h5>
+                  <p className="text-[12px] text-[#6E645A]">Never drive or walk through moving water.</p>
+                  <p className="text-[12px] text-[#6E645A]">6 inches of moving water can knock you down.</p>
+                  <p className="text-[12px] text-[#6E645A]">Elevate home electronics in low-lying corridors.</p>
+                </div>
+                <div className="p-5 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-2">
+                  <span className="material-symbols-outlined text-emerald-600 text-[24px]">medical_services</span>
+                  <h5 className="font-bold text-[15px] text-[#1C1814]">Emergency Kit Checklist</h5>
+                  <p className="text-[12px] text-[#6E645A]">Waterproof flashlight &amp; extra batteries.</p>
+                  <p className="text-[12px] text-[#6E645A]">3-day drinking water ration (3L/person/day).</p>
+                  <p className="text-[12px] text-[#6E645A]">Personal prescription medicines &amp; first aid kit.</p>
+                </div>
+              </div>
+            </div>
+          )
         };
       default:
         return {

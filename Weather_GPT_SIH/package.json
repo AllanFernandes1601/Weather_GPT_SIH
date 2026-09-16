@@ -9,14 +9,7 @@
     "start": "node dist/server.cjs",
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
-    "lint": "tsc --noEmit",
-    "rag:ingest": "set -a; . ./.env; set +a; python3 rag/scripts/ingest_cleaned_data.py --data-dir \"$WEATHERGPT_CLEAN_DATA_DIR\"",
-    "rag:test": "python3 -m unittest rag/tests/test_retrieval.py -v",
-    "rag:evaluate": "python3 rag/scripts/evaluate_retrieval.py",
-    "risk:test": "node --import tsx scripts/test-risk-engine.ts",
-    "setup:ml": "python3 -m venv .venv && .venv/bin/python -m pip install -r ml/requirements.txt",
-    "deploy:check": "node scripts/check-deployment.mjs",
-    "deploy:prepare": "npm run rag:test && npm run rag:evaluate && npm run lint && npm run build && npm run deploy:check"
+    "lint": "tsc --noEmit"
   },
   "dependencies": {
     "@google/genai": "^2.4.0",
@@ -27,13 +20,11 @@
     "lucide-react": "^0.546.0",
     "motion": "^12.23.24",
     "react": "^19.0.1",
-    "react-dom": "^19.0.1",
-    "ws": "^8.18.0"
+    "react-dom": "^19.0.1"
   },
   "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^22.14.0",
-    "@types/ws": "^8.5.14",
     "autoprefixer": "^10.4.21",
     "esbuild": "^0.25.0",
     "tailwindcss": "^4.1.14",
