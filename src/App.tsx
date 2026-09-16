@@ -15,6 +15,7 @@ import { AlertModal } from './components/AlertModal';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
 import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
+import { LanguageId } from '../languageConfig';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -22,6 +23,7 @@ export default function App() {
   const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>(HOURLY_FORECAST_DATA);
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [, setWeatherError] = useState<string | null>(null);
+  const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>('auto');
 
   const voiceContext = {
     locationName: activeLocation.name,
@@ -36,7 +38,8 @@ export default function App() {
       condition: item.condition,
       rainProbabilityPercent: item.rainProbability
     })),
-    alert: ACTIVE_ALERT as unknown as Record<string, unknown>
+    alert: ACTIVE_ALERT as unknown as Record<string, unknown>,
+    language: selectedLanguage
   };
 
   const {
@@ -249,6 +252,8 @@ export default function App() {
                 liveState={liveState}
                 liveTranscript={liveTranscript}
                 playbackState={playbackState}
+                selectedLanguage={selectedLanguage}
+                onLanguageChange={setSelectedLanguage}
               />
 
               {/* Section 4: Today's Hourly Forecast */}

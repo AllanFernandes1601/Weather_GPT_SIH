@@ -4,6 +4,7 @@ import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
 import { AudioDiagnostics, VoicePlaybackState } from '../hooks/useVoiceCapture';
 import { VoiceTransportState } from '../services/voiceTransport';
+import { LANGUAGE_OPTIONS, LanguageId } from '../../languageConfig';
 
 interface AIWeatherInputProps {
   location: LocationData;
@@ -19,6 +20,8 @@ interface AIWeatherInputProps {
   liveState?: VoiceTransportState;
   liveTranscript?: string;
   playbackState?: VoicePlaybackState;
+  selectedLanguage: LanguageId;
+  onLanguageChange: (language: LanguageId) => void;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
@@ -34,7 +37,9 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   diagnostics,
   liveState,
   liveTranscript,
-  playbackState = 'idle'
+  playbackState = 'idle',
+  selectedLanguage,
+  onLanguageChange
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +53,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
     setIsLoading(true);
     setErrorMessage('');
     try {
-      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
+      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast, selectedLanguage);
       setActiveResponse(response);
       setQuery(questionText);
     } catch (err) {
@@ -131,6 +136,28 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
             <span className="w-1 bg-[#D97706] rounded-full wave-bar-3 h-3" />
             <span className="w-1 bg-[#C2410C] rounded-full wave-bar-4 h-3.5" />
           </div>
+        </div>
+
+        <div
+          className="flex items-center gap-2 shrink-0"
+          title={isVoiceActive ? 'Language changes apply when Voice to Cloud is restarted' : 'Choose the WeatherGPT response language'}
+        >
+          <label htmlFor="weathergpt-language" className="text-[11px] uppercase tracking-wider font-bold text-[#6E645A]">
+            Language
+          </label>
+          <select
+            id="weathergpt-language"
+            value={selectedLanguage}
+            disabled={isVoiceActive}
+            onChange={(event) => onLanguageChange(event.target.value as LanguageId)}
+            className="max-w-[190px] rounded-xl border border-[#B45309]/30 bg-white/90 px-3 py-2 text-[13px] font-semibold text-[#1C1814] shadow-sm outline-none focus:border-[#B45309] focus:ring-2 focus:ring-[#B45309]/20"
+          >
+            {LANGUAGE_OPTIONS.map((option) => (
+              <option key={option.id} value={option.id}>
+                {option.displayName}{option.id === 'auto' ? '' : ` — ${option.nativeName}`}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

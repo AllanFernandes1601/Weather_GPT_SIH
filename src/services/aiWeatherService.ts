@@ -1,4 +1,5 @@
 import { HourlyForecastItem, LocationData } from '../types';
+import { LanguageId } from '../../languageConfig';
 
 export interface AIResponse {
   query: string;
@@ -55,7 +56,8 @@ export const aiWeatherService = {
   async askWeatherGPT(
     prompt: string,
     location: LocationData,
-    hourlyForecast: HourlyForecastItem[]
+    hourlyForecast: HourlyForecastItem[],
+    language: LanguageId = 'auto'
   ): Promise<AIResponse> {
     const liveWeather = buildWeatherGPTLiveWeather(location);
     const response = await fetch('/api/ai/weather', {
@@ -63,6 +65,7 @@ export const aiWeatherService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         prompt,
+        language,
         locationName: location.name,
         stateName: location.state,
         liveWeather,

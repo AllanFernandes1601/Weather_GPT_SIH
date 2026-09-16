@@ -1,3 +1,5 @@
+import { LanguageId } from '../../languageConfig';
+
 /**
  * Voice WebSocket Transport Service for WeatherGPT.
  * - Handles client-side persistent WebSocket connection to /ws/live.
@@ -33,6 +35,7 @@ export interface VoiceSessionContext {
   liveWeather: Record<string, unknown>;
   hourlyForecast: Array<Record<string, unknown>>;
   alert?: Record<string, unknown>;
+  language: LanguageId;
 }
 
 export interface VoiceTransportCallbacks {
