@@ -36,6 +36,7 @@ export type OccupationType =
   | 'worker'
   | 'self_employed'
   | 'employed'
+  | 'unemployed'
   | 'student'
   | 'retired'
   | 'other'
@@ -81,6 +82,8 @@ export type EligibilityRule =
       field: AssistanceProfileField;
       kind: 'required';
       description: string;
+      userFacing?: boolean;
+      confirmationLabel?: string;
     }
   | {
       id: string;
@@ -88,6 +91,8 @@ export type EligibilityRule =
       kind: 'allowed_values';
       values: readonly string[];
       description: string;
+      userFacing?: boolean;
+      confirmationLabel?: string;
     }
   | {
       id: string;
@@ -95,6 +100,8 @@ export type EligibilityRule =
       kind: 'equals';
       value: string | boolean;
       description: string;
+      userFacing?: boolean;
+      confirmationLabel?: string;
     };
 
 export type EligibilityStatus =
@@ -109,6 +116,7 @@ export interface EligibilityResult {
   matchedReasons: string[];
   failedReasons: string[];
   missingInformation: string[];
+  officialConfirmation: string[];
 }
 
 export interface GovernmentAssistanceScheme {

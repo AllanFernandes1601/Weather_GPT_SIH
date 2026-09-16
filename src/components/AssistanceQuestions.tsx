@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { AssistanceUserProfile } from '../types';
 import { getCandidateSchemes, getRequiredQuestions } from '../utils/disasterAssistanceEligibility';
 
@@ -58,11 +58,13 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
     supportingText: 'Choose the closest description for the work affected by the disaster.',
     inputType: 'choice',
     options: [
-      { label: 'Worker', value: 'worker' },
+      { label: 'Daily-wage worker', value: 'worker' },
       { label: 'Self-employed', value: 'self_employed' },
-      { label: 'Business owner', value: 'business_owner' },
+      { label: 'Small business owner', value: 'business_owner' },
+      { label: 'Salaried worker', value: 'employed' },
       { label: 'Farmer', value: 'farmer' },
       { label: 'Fisher', value: 'fisher' },
+      { label: 'Unemployed', value: 'unemployed' },
       { label: 'Other', value: 'other' },
       { label: 'Not sure', value: 'unknown' }
     ]
@@ -240,29 +242,41 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
   }
 ];
 
-function hasAnswer(profile: AssistanceUserProfile, field: QuestionField): boolean {
-  return profile[field] !== undefined;
-}
-
 export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
   profile,
   onChange,
   onContinue,
   onBack
 }) => {
-  const candidateSchemes = getCandidateSchemes(profile);
-  const requiredLabels = new Set(getRequiredQuestions(candidateSchemes));
+  const [renderedQuestionLabels, setRenderedQuestionLabels] = useState<readonly string[]>(() => {
+    const candidateSchemes = getCandidateSchemes(profile);
+    return getRequiredQuestions(candidateSchemes);
+  });
+
+  useEffect(() => {
+    const candidateSchemes = getCandidateSchemes(profile);
+    const newlyRequiredLabels = getRequiredQuestions(candidateSchemes);
+    setRenderedQuestionLabels(previousLabels => {
+      const labels = new Set(previousLabels);
+      newlyRequiredLabels.forEach(label => labels.add(label));
+      return QUESTION_DEFINITIONS
+        .filter(question => labels.has(question.engineLabel))
+        .map(question => question.engineLabel);
+    });
+  }, [profile]);
+
+  const requiredQuestionLabels = new Set(renderedQuestionLabels);
   const questions = QUESTION_DEFINITIONS.filter(question =>
-    requiredLabels.has(question.engineLabel) && !hasAnswer(profile, question.field)
+    requiredQuestionLabels.has(question.engineLabel)
   );
 
   const handleAnswer = (field: QuestionField, value: string | boolean | undefined) => {
     switch (field) {
       case 'state':
-        if (typeof value === 'string') onChange({ ...profile, state: value.trim() || undefined });
+        if (typeof value === 'string') onChange({ ...profile, state: value });
         break;
       case 'occupation':
-        if (value === 'worker' || value === 'self_employed' || value === 'business_owner' || value === 'farmer' || value === 'fisher' || value === 'other' || value === 'unknown') {
+        if (value === 'worker' || value === 'self_employed' || value === 'business_owner' || value === 'employed' || value === 'farmer' || value === 'fisher' || value === 'unemployed' || value === 'other' || value === 'unknown') {
           onChange({ ...profile, occupation: value });
         }
         break;
@@ -365,16 +379,27 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
                   />
                 ) : (
                   <div className="mt-4 grid grid-cols-2 gap-2.5 sm:grid-cols-3">
-                    {question.options?.map(option => (
-                      <button
-                        key={option.label}
-                        type="button"
-                        onClick={() => handleAnswer(question.field, option.value)}
-                        className="rounded-2xl border border-[#E5DCCF] bg-[#FFFDF9] px-2 py-3 text-[12px] font-semibold text-[#6E645A] transition hover:border-[#D97706] hover:bg-amber-50 hover:text-[#1C1814] active:scale-[0.98] sm:px-4 sm:text-[13px]"
-                      >
-                        {option.label}
-                      </button>
-                    ))}
+                    {question.options?.map(option => {
+                      const isSelected = profile[question.field] === option.value;
+                      return (
+                        <button
+                          key={option.label}
+                          type="button"
+                          aria-pressed={isSelected}
+                          onClick={() => handleAnswer(question.field, option.value)}
+                          className={`rounded-2xl border px-2 py-3 text-[12px] font-semibold transition active:scale-[0.98] sm:px-4 sm:text-[13px] ${
+                            isSelected
+                              ? 'border-[#B45309] bg-amber-100 text-[#7C2D12] shadow-sm ring-2 ring-[#B45309]/15'
+                              : 'border-[#E5DCCF] bg-[#FFFDF9] text-[#6E645A] hover:border-[#D97706] hover:bg-amber-50 hover:text-[#1C1814]'
+                          }`}
+                        >
+                          <span className="inline-flex items-center justify-center gap-1.5">
+                            {isSelected && <span className="material-symbols-outlined text-[16px]">check</span>}
+                            {option.label}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </fieldset>

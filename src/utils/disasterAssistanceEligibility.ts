@@ -70,10 +70,17 @@ export function getCandidateSchemes(
   return schemes.filter(scheme => {
     const incidentMatch = incidents.some(incident => scheme.applicableIncidents.includes(incident));
     const impactMatch = impacts.some(impact => scheme.applicableImpacts.includes(impact));
-    const occupationMatch = occupation ? scheme.applicableOccupations.includes(occupation) : false;
+    const occupationMatch = occupation && occupation !== 'unknown'
+      ? scheme.applicableOccupations.includes(occupation)
+      : false;
     if (!incidentMatch) return false;
-    if (scheme.applicableImpacts.length === 0) return true;
-    return impactMatch && (scheme.applicableOccupations.length === 0 || occupationMatch || !occupation);
+    const isUniversalDiscoveryPathway =
+      scheme.actionType === 'official_information' &&
+      scheme.assistanceType === 'welfare' &&
+      scheme.applicableImpacts.length === 0;
+    if (isUniversalDiscoveryPathway) return true;
+    if (!impactMatch) return false;
+    return scheme.applicableOccupations.length === 0 || occupationMatch || !occupation || occupation === 'unknown';
   });
 }
 
@@ -83,7 +90,7 @@ export function getRequiredQuestions(
   const questions = new Set<string>();
   schemes.forEach(scheme => {
     scheme.eligibilityRules.forEach(rule => {
-      if (rule.kind === 'required' || rule.kind === 'allowed_values' || rule.kind === 'equals') {
+      if (rule.userFacing !== false) {
         questions.add(PROFILE_LABELS[rule.field] || rule.field);
       }
     });
@@ -98,11 +105,14 @@ function readField(profile: AssistanceUserProfile, field: AssistanceProfileField
 function evaluateRule(
   rule: EligibilityRule,
   profile: AssistanceUserProfile
-): { matched?: string; failed?: string; missing?: string } {
+): { matched?: string; failed?: string; missing?: string; confirmation?: string } {
   const value = readField(profile, rule.field);
   const label = PROFILE_LABELS[rule.field] || rule.field;
 
   if (value === undefined || value === null || value === '' || value === 'unknown') {
+    if (rule.userFacing === false) {
+      return { confirmation: `Needs official confirmation: ${rule.confirmationLabel || label}.` };
+    }
     return { missing: `Provide ${label}.` };
   }
 
@@ -124,26 +134,66 @@ export function evaluateSchemeEligibility(
   const matchedReasons: string[] = [];
   const failedReasons: string[] = [];
   const missingInformation: string[] = [];
+  const officialConfirmation: string[] = [];
 
   scheme.eligibilityRules.forEach(rule => {
     const result = evaluateRule(rule, profile);
     if (result.matched) matchedReasons.push(result.matched);
     if (result.failed) failedReasons.push(result.failed);
     if (result.missing) missingInformation.push(result.missing);
+    if (result.confirmation) officialConfirmation.push(result.confirmation);
   });
 
   const status = failedReasons.length
     ? 'NOT_ELIGIBLE'
-    : missingInformation.length
+    : missingInformation.length || officialConfirmation.length
       ? (matchedReasons.length ? 'POSSIBLY_ELIGIBLE' : 'INSUFFICIENT_INFORMATION')
       : 'ELIGIBLE';
 
-  return { schemeId: scheme.id, status, matchedReasons, failedReasons, missingInformation };
+  return { schemeId: scheme.id, status, matchedReasons, failedReasons, missingInformation, officialConfirmation };
 }
 
 export function evaluateAllSchemes(
   profile: AssistanceUserProfile,
   schemes: readonly GovernmentAssistanceScheme[] = DISASTER_ASSISTANCE_SCHEMES
 ): EligibilityResult[] {
-  return getCandidateSchemes(profile, schemes).map(scheme => evaluateSchemeEligibility(profile, scheme));
+  const incidents = profileIncidents(profile);
+  const impacts = profile.impactTypes || [];
+  const occupation = profile.occupation;
+
+  return getCandidateSchemes(profile, schemes)
+    .map(scheme => ({
+      scheme,
+      result: evaluateSchemeEligibility(profile, scheme),
+      isDiscoveryFallback: scheme.actionType === 'official_information',
+      impactIndex: Math.min(
+        ...impacts
+          .map((impact, index) => scheme.applicableImpacts.includes(impact) ? index : Number.MAX_SAFE_INTEGER),
+        Number.MAX_SAFE_INTEGER
+      ),
+      occupationMatch: Boolean(occupation && occupation !== 'unknown' && scheme.applicableOccupations.includes(occupation)),
+      incidentIndex: Math.min(
+        ...incidents
+          .map((incident, index) => scheme.applicableIncidents.includes(incident) ? index : Number.MAX_SAFE_INTEGER),
+        Number.MAX_SAFE_INTEGER
+      )
+    }))
+    .sort((left, right) => {
+      if (left.isDiscoveryFallback !== right.isDiscoveryFallback) {
+        return left.isDiscoveryFallback ? 1 : -1;
+      }
+      if (left.scheme.assistanceType !== right.scheme.assistanceType) {
+        const priority: Record<GovernmentAssistanceScheme['assistanceType'], number> = {
+          insurance: 0,
+          scheme: 1,
+          disaster_relief: 2,
+          welfare: 3
+        };
+        return priority[left.scheme.assistanceType] - priority[right.scheme.assistanceType];
+      }
+      if (left.impactIndex !== right.impactIndex) return left.impactIndex - right.impactIndex;
+      if (left.occupationMatch !== right.occupationMatch) return left.occupationMatch ? -1 : 1;
+      return left.incidentIndex - right.incidentIndex;
+    })
+    .map(item => item.result);
 }

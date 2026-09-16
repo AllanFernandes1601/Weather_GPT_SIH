@@ -25,10 +25,10 @@ function formatScope(scope: GovernmentAssistanceScheme['scope']): string {
 }
 
 function formatAssistanceType(type: GovernmentAssistanceScheme['assistanceType']): string {
-  if (type === 'disaster_relief') return 'Disaster relief pathway';
-  if (type === 'insurance') return 'Insurance scheme';
-  if (type === 'welfare') return 'Government information pathway';
-  return 'Government scheme';
+  if (type === 'disaster_relief') return 'Disaster Relief';
+  if (type === 'insurance') return 'Crop Insurance';
+  if (type === 'welfare') return 'Welfare / Support';
+  return 'Government Scheme';
 }
 
 function statusLabel(scheme: GovernmentAssistanceScheme, status: EligibilityResult['status']): string {
@@ -49,30 +49,28 @@ function actionLabel(scheme: GovernmentAssistanceScheme): string {
 
 export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ scheme, result }) => (
   <article className="rounded-3xl border border-[#E5DCCF] bg-white p-5 shadow-sm sm:p-6">
-    <div className="flex flex-col gap-4 border-b border-[#E5DCCF]/70 pb-5 sm:flex-row sm:items-start sm:justify-between">
-      <div>
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[19px] font-bold leading-tight text-[#1C1814]">{scheme.name}</h3>
-          {scheme.shortName && (
-            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wide text-[#B45309]">
-              {scheme.shortName}
-            </span>
-          )}
-        </div>
-        <p className="mt-2 text-[12px] font-semibold text-[#6E645A]">{scheme.authority}</p>
-      </div>
-      <span className={`inline-flex shrink-0 items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold leading-snug ${STATUS_STYLES[result.status]}`}>
-        <span className="material-symbols-outlined text-[16px]">
-          {result.status === 'ELIGIBLE' ? 'check_circle' : result.status === 'NOT_ELIGIBLE' ? 'cancel' : 'info'}
+    <div className="border-b border-[#E5DCCF]/70 pb-5">
+      <h3 className="text-[24px] font-bold leading-tight tracking-tight text-[#1C1814] sm:text-[28px]">
+        {scheme.name}{scheme.shortName ? ` (${scheme.shortName})` : ''}
+      </h3>
+      <p className="mt-2 text-[12px] font-bold uppercase tracking-wider text-[#6E645A]">
+        {formatAssistanceType(scheme.assistanceType)}
+      </p>
+      <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold leading-snug ${STATUS_STYLES[result.status]}`}>
+          <span className="material-symbols-outlined text-[16px]">
+            {result.status === 'ELIGIBLE' ? 'check_circle' : result.status === 'NOT_ELIGIBLE' ? 'cancel' : 'info'}
+          </span>
+          {statusLabel(scheme, result.status)}
         </span>
-        {statusLabel(scheme, result.status)}
-      </span>
+        <p className="text-[12px] font-semibold text-[#6E645A]">{scheme.authority}</p>
+      </div>
     </div>
 
     <div className="mt-5 grid gap-5 lg:grid-cols-[1.15fr_0.85fr]">
       <div className="space-y-5">
         <div>
-          <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E9197]">{formatAssistanceType(scheme.assistanceType)}</p>
+          <p className="text-[11px] font-bold uppercase tracking-wider text-[#8E9197]">About this assistance</p>
           <p className="mt-1.5 text-[13px] leading-relaxed text-[#6E645A]">{scheme.description}</p>
           <p className="mt-2 text-[12px] font-semibold text-[#6E645A]">Scope: {formatScope(scheme.scope)}</p>
         </div>
@@ -101,6 +99,20 @@ export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ sche
                 <li key={item} className="flex gap-2 text-[12px] leading-relaxed text-blue-900">
                   <span className="material-symbols-outlined mt-0.5 text-[15px]">help</span>
                   <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {result.officialConfirmation.length > 0 && (
+          <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-3.5">
+            <p className="text-[11px] font-bold uppercase tracking-wider text-amber-900">Needs official confirmation</p>
+            <ul className="mt-2 space-y-1.5">
+              {result.officialConfirmation.map(item => (
+                <li key={item} className="flex gap-2 text-[12px] leading-relaxed text-amber-950">
+                  <span className="material-symbols-outlined mt-0.5 text-[15px]">verified_user</span>
+                  <span>{item.replace('Needs official confirmation: ', '')}</span>
                 </li>
               ))}
             </ul>

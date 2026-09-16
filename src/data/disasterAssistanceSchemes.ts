@@ -28,28 +28,36 @@ export const DISASTER_ASSISTANCE_SCHEMES: readonly GovernmentAssistanceScheme[] 
         field: 'cropInsuranceStatus',
         kind: 'equals',
         value: 'insured',
-        description: 'The affected crop is insured under PMFBY where insurance is required for the claim.'
+        description: 'The affected crop is insured under PMFBY where insurance is required for the claim.',
+        userFacing: false,
+        confirmationLabel: 'enrollment or insurance status for the relevant season'
       },
       {
         id: 'pmfby-notified-crop',
         field: 'cropNotifiedStatus',
         kind: 'equals',
         value: 'notified',
-        description: 'The affected crop is notified for the relevant season and area.'
+        description: 'The affected crop is notified for the relevant season and area.',
+        userFacing: false,
+        confirmationLabel: 'whether the crop and area were notified for the relevant season'
       },
       {
         id: 'pmfby-notified-area',
         field: 'notifiedAreaStatus',
         kind: 'equals',
         value: 'notified',
-        description: 'The affected land is within the applicable notified area or insurance unit.'
+        description: 'The affected land is within the applicable notified area or insurance unit.',
+        userFacing: false,
+        confirmationLabel: 'whether the affected area was notified under the scheme'
       },
       {
         id: 'pmfby-covered-peril',
         field: 'coveredPerilStatus',
         kind: 'equals',
         value: 'covered',
-        description: 'The reported peril or loss is covered under the applicable notified scheme terms.'
+        description: 'The reported peril or loss is covered under the applicable notified scheme terms.',
+        userFacing: false,
+        confirmationLabel: 'covered peril and claim conditions'
       }
     ],
     benefits: ['Claim assessment and indemnity for admissible crop loss under applicable PMFBY terms.'],
