@@ -43,8 +43,8 @@ export const aiWeatherService = {
         locationName: location.name,
         stateName: location.state,
         liveWeather,
-        hourlyForecast: hourlyForecast.slice(0, 12).map(item => ({
-          time: item.time,
+        hourlyForecast: hourlyForecast.slice(0, 48).map(item => ({
+          time: item.forecastTime || item.time,
           temperatureC: item.temperature,
           condition: item.condition,
           rainProbabilityPercent: item.rainProbability

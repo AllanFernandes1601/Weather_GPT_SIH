@@ -27,7 +27,7 @@ export const HourlyForecast: React.FC<HourlyForecastProps> = ({ forecastItems, i
 
       <div className="overflow-x-auto no-scrollbar pb-2 -mx-2 px-2">
         <div className="grid grid-flow-col auto-cols-[minmax(130px,1fr)] sm:grid-cols-4 lg:grid-cols-8 gap-3 min-w-[720px] lg:min-w-0">
-          {forecastItems.map((item, index) => {
+          {forecastItems.slice(0, 24).map((item, index) => {
             let cardStyle = 'border-[#E5DCCF]/70';
             let barColor = 'bg-[#D97706]';
             let textColor = 'text-[#B45309]';
