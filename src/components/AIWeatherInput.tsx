@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
 import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
+import { AudioDiagnostics } from '../hooks/useVoiceCapture';
+import { VoiceTransportState } from '../services/voiceTransport';
 
 interface AIWeatherInputProps {
   location: LocationData;
@@ -11,6 +13,11 @@ interface AIWeatherInputProps {
   longitude?: number;
   isVoiceActive: boolean;
   onToggleVoice: () => void;
+  voiceError?: string | null;
+  onClearVoiceError?: () => void;
+  diagnostics?: AudioDiagnostics;
+  liveState?: VoiceTransportState;
+  liveTranscript?: string;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
@@ -20,7 +27,12 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   latitude,
   longitude,
   isVoiceActive,
-  onToggleVoice
+  onToggleVoice,
+  voiceError,
+  onClearVoiceError,
+  diagnostics,
+  liveState,
+  liveTranscript
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -195,20 +207,97 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
         {isVoiceActive && (
           <div 
             id="voice-active-notice"
-            className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-blue-50 to-amber-50 border border-[#B45309]/40 flex items-center justify-between text-[#1C1814] shadow-sm transition-all duration-300"
+            className="mt-3 p-3.5 rounded-2xl bg-gradient-to-r from-amber-50 via-blue-50 to-amber-50 border border-[#B45309]/40 flex flex-col sm:flex-row sm:items-center justify-between text-[#1C1814] shadow-sm transition-all duration-300 gap-2.5"
           >
             <div className="flex items-center gap-3">
               <span className="material-symbols-outlined text-[#B45309] text-[22px] animate-pulse">
                 sensors
               </span>
-              <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309]">
-                Listening to voice... Analyzing atmospheric cloud data for {location.name} Urban
+              <div>
+                <span className="text-[13px] sm:text-[14px] font-semibold text-[#B45309] block">
+                  {liveState === 'connecting'
+                    ? 'Connecting to Gemini Live voice session...'
+                    : liveState === 'connected' || liveState === 'sending'
+                    ? `Gemini Live Connected • Streaming audio for ${location.name} Urban`
+                    : `Listening to voice... Processing microphone audio for ${location.name} Urban`}
+                </span>
+                {diagnostics && diagnostics.processingActive && (
+                  <div className="flex items-center gap-2 mt-1 text-[11px] font-medium text-[#78350F] flex-wrap">
+                    <span className="px-2 py-0.5 rounded-md bg-amber-200/60 border border-amber-300">
+                      16 kHz PCM Mono
+                    </span>
+                    <span>•</span>
+                    <span>Chunks: <strong className="text-[#1C1814]">{diagnostics.chunkCount}</strong></span>
+                    <span>•</span>
+                    <span>PCM: <strong className="text-[#1C1814]">{(diagnostics.byteCount / 1024).toFixed(1)} KB</strong></span>
+                    <span>•</span>
+                    <span>Input: <strong className="text-[#1C1814]">{(diagnostics.inputSampleRate / 1000).toFixed(1)} kHz</strong></span>
+                    <span>•</span>
+                    <span className="flex items-center gap-1">
+                      <span>Level:</span>
+                      <span className="inline-block w-12 h-2 bg-amber-200 rounded-full overflow-hidden border border-amber-300">
+                        <span
+                          className="block h-full bg-[#B45309] transition-all duration-75"
+                          style={{ width: `${Math.min(100, Math.round(diagnostics.rmsLevel * 300))}%` }}
+                        />
+                      </span>
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase shrink-0">
+              <span>
+                {liveState === 'connecting'
+                  ? 'Connecting Session'
+                  : liveState === 'connected'
+                  ? 'Gemini Live Ready'
+                  : liveState === 'sending'
+                  ? 'Sending Audio'
+                  : 'Local Audio Pipeline Active'}
               </span>
+              <span className={`w-2 h-2 rounded-full ${liveState === 'connected' || liveState === 'sending' ? 'bg-emerald-500' : 'bg-amber-500'} animate-pulse`}></span>
             </div>
-            <div className="flex items-center gap-2 text-[#B45309] text-[11px] font-bold uppercase">
-              <span>Synoptic Cloud Stream Active</span>
-              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+          </div>
+        )}
+
+        {/* Real-time Gemini transcription card */}
+        {isVoiceActive && liveTranscript && (
+          <div
+            id="gemini-live-transcript-card"
+            className="mt-3 p-4 rounded-2xl bg-[#FFFDF9] border border-amber-300/80 shadow-sm text-[#1C1814]"
+          >
+            <div className="flex items-center gap-2 mb-1.5 text-[11px] font-bold uppercase text-[#B45309]">
+              <span className="material-symbols-outlined text-[16px]">record_voice_over</span>
+              <span>Gemini Live Response:</span>
             </div>
+            <p className="text-[14px] leading-relaxed text-[#1C1814] font-medium">
+              {liveTranscript}
+            </p>
+          </div>
+        )}
+
+        {voiceError && (
+          <div
+            id="voice-error-notice"
+            className="mt-3 p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-[13px] font-semibold text-rose-800 flex items-center justify-between gap-3 shadow-sm"
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="material-symbols-outlined text-rose-600 text-[20px]">
+                mic_off
+              </span>
+              <span>{voiceError}</span>
+            </div>
+            {onClearVoiceError && (
+              <button
+                type="button"
+                onClick={onClearVoiceError}
+                className="p-1 text-rose-600 hover:text-rose-900 rounded-lg transition-colors cursor-pointer"
+                title="Dismiss error"
+              >
+                <span className="material-symbols-outlined text-[16px]">close</span>
+              </button>
+            )}
           </div>
         )}
 

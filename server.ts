@@ -1,9 +1,11 @@
 import 'dotenv/config';
 import express from 'express';
+import http from 'http';
 import path from 'path';
 import { spawn } from 'child_process';
 import { createServer as createViteServer } from 'vite';
-import { GoogleGenAI } from '@google/genai';
+import { WebSocketServer, WebSocket } from 'ws';
+import { GoogleGenAI, Modality } from '@google/genai';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -63,8 +65,8 @@ function isWithinBengaluruModelArea(latitude: number, longitude: number): boolea
   const a =
     Math.sin(latitudeDelta / 2) ** 2 +
     Math.cos(toRadians(BENGALURU_LATITUDE)) *
-      Math.cos(toRadians(latitude)) *
-      Math.sin(longitudeDelta / 2) ** 2;
+    Math.cos(toRadians(latitude)) *
+    Math.sin(longitudeDelta / 2) ** 2;
   return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) <= BENGALURU_MODEL_RADIUS_KM;
 }
 
@@ -385,11 +387,11 @@ For historical-only answers, timing should say that live timing is unavailable. 
       ? 'Gemini API key is invalid. Replace GEMINI_API_KEY in .env and restart the app.'
       : /model.*(?:not found|no longer available)|NOT_FOUND/i.test(message)
         ? 'The configured Gemini model is unavailable. Update GEMINI_MODEL in .env.'
-      : /quota|resource_exhausted/i.test(message)
-        ? 'Gemini API quota is unavailable. Check the API key quota and billing settings.'
-        : /503|UNAVAILABLE|high demand|temporarily/i.test(message)
-          ? 'Gemini is temporarily busy. Please retry in a moment.'
-        : 'WeatherGPT could not generate an answer. Please try again.';
+        : /quota|resource_exhausted/i.test(message)
+          ? 'Gemini API quota is unavailable. Check the API key quota and billing settings.'
+          : /503|UNAVAILABLE|high demand|temporarily/i.test(message)
+            ? 'Gemini is temporarily busy. Please retry in a moment.'
+            : 'WeatherGPT could not generate an answer. Please try again.';
     return res.status(502).json({ error: publicMessage });
   }
 });
@@ -502,7 +504,7 @@ app.get('/api/weather', async (req, res) => {
     ]);
 
     if (weatherRes.status !== 'fulfilled' || !weatherRes.value.ok) {
-      const errorMsg = weatherRes.status === 'fulfilled' 
+      const errorMsg = weatherRes.status === 'fulfilled'
         ? `Open-Meteo returned status ${weatherRes.value.status}`
         : (weatherRes.reason?.message || 'Network error connecting to Open-Meteo');
       console.error('[Open-Meteo Forecast Error]:', errorMsg);
@@ -747,10 +749,185 @@ app.get('/api/geocode/reverse', async (req, res) => {
   }
 });
 
+function setupGeminiLiveWebSocket(wss: WebSocketServer) {
+  wss.on('connection', async (clientWs: WebSocket) => {
+    let geminiSession: any = null;
+    let isClosed = false;
+
+    const cleanup = () => {
+      if (isClosed) return;
+      isClosed = true;
+      if (geminiSession) {
+        try {
+          geminiSession.close();
+        } catch (err) {
+          console.warn('[Gemini Live Cleanup Warning]:', err);
+        }
+        geminiSession = null;
+      }
+      if (clientWs.readyState === WebSocket.OPEN || clientWs.readyState === WebSocket.CONNECTING) {
+        try {
+          clientWs.close();
+        } catch {
+          // ignore close error
+        }
+      }
+    };
+
+    clientWs.on('close', () => cleanup());
+    clientWs.on('error', () => cleanup());
+
+    try {
+      if (!process.env.GEMINI_API_KEY) {
+        clientWs.send(
+          JSON.stringify({
+            type: 'status',
+            status: 'error',
+            message: 'Gemini API key is not configured on the server. Add GEMINI_API_KEY to .env.'
+          })
+        );
+        cleanup();
+        return;
+      }
+
+      clientWs.send(JSON.stringify({ type: 'status', status: 'connecting' }));
+
+      const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+      const liveModel = process.env.GEMINI_LIVE_MODEL || 'gemini-2.5-flash-native-audio-latest';
+
+      geminiSession = await ai.live.connect({
+        model: liveModel,
+        config: {
+          responseModalities: [Modality.AUDIO],
+          systemInstruction:
+            'You are WeatherGPT, a conversational meteorological and commute safety AI assistant for India. Provide concise, friendly, and natural spoken answers.'
+        },
+        callbacks: {
+          onmessage: (msg: any) => {
+            if (clientWs.readyState !== WebSocket.OPEN) return;
+            try {
+              const parts = msg.serverContent?.modelTurn?.parts;
+              if (Array.isArray(parts)) {
+                for (const part of parts) {
+                  if (part.text) {
+                    clientWs.send(JSON.stringify({ type: 'text', text: part.text }));
+                  }
+                  if (part.inlineData?.data && part.inlineData?.mimeType) {
+                    clientWs.send(
+                      JSON.stringify({
+                        type: 'audio',
+                        data: part.inlineData.data,
+                        mimeType: part.inlineData.mimeType
+                      })
+                    );
+                  }
+                }
+              }
+              if (msg.serverContent?.interrupted) {
+                clientWs.send(JSON.stringify({ type: 'interrupted' }));
+              }
+              if (msg.serverContent?.turnComplete) {
+                clientWs.send(JSON.stringify({ type: 'turnComplete' }));
+              }
+            } catch (err) {
+              console.warn('[Gemini Live Parse Warning]:', err);
+            }
+          },
+          onerror: (err: any) => {
+            console.error('[Gemini Live Session Error]:', err?.message || err);
+            if (clientWs.readyState === WebSocket.OPEN) {
+              clientWs.send(
+                JSON.stringify({
+                  type: 'status',
+                  status: 'error',
+                  message: 'Gemini Live encountered a connection error.'
+                })
+              );
+            }
+          },
+          onclose: () => {
+            if (clientWs.readyState === WebSocket.OPEN) {
+              clientWs.send(JSON.stringify({ type: 'status', status: 'closed' }));
+            }
+          }
+        }
+      });
+
+      if (isClosed) {
+        cleanup();
+        return;
+      }
+
+      clientWs.send(JSON.stringify({ type: 'status', status: 'connected' }));
+
+      clientWs.on('message', (data: any, isBinary: boolean) => {
+        if (!geminiSession || isClosed) return;
+
+        if (isBinary) {
+          try {
+            const buf = Buffer.isBuffer(data) ? data : Buffer.from(data);
+            geminiSession.sendRealtimeInput({
+              media: {
+                mimeType: 'audio/pcm;rate=16000',
+                data: buf.toString('base64')
+              }
+            });
+          } catch (sendErr) {
+            console.warn('[Gemini Live Send Error]:', sendErr);
+          }
+        } else {
+          try {
+            const textStr = data.toString();
+            const jsonMsg = JSON.parse(textStr);
+            if (jsonMsg.type === 'stop') {
+              cleanup();
+            } else if ((jsonMsg.type === 'prompt' || jsonMsg.type === 'text') && typeof jsonMsg.text === 'string') {
+              geminiSession.sendClientContent({
+                turns: [{ role: 'user', parts: [{ text: jsonMsg.text }] }],
+                turnComplete: true
+              });
+            }
+          } catch {
+            // ignore malformed text messages
+          }
+        }
+      });
+    } catch (connectError: any) {
+      console.error('[Gemini Live Connect Error]:', connectError?.message || connectError);
+      if (clientWs.readyState === WebSocket.OPEN) {
+        clientWs.send(
+          JSON.stringify({
+            type: 'status',
+            status: 'error',
+            message: connectError?.message || 'Failed to establish Gemini Live connection.'
+          })
+        );
+      }
+      cleanup();
+    }
+  });
+}
+
 async function startServer() {
+  const httpServer = http.createServer(app);
+  const wss = new WebSocketServer({ noServer: true });
+
+  setupGeminiLiveWebSocket(wss);
+
+  httpServer.on('upgrade', (request, socket, head) => {
+    const url = new URL(request.url || '', `http://${request.headers.host || 'localhost'}`);
+    if (url.pathname === '/ws/live') {
+      wss.handleUpgrade(request, socket, head, (ws) => {
+        wss.emit('connection', ws, request);
+      });
+    } else {
+      socket.destroy();
+    }
+  });
+
   if (process.env.NODE_ENV !== 'production') {
     const vite = await createViteServer({
-      server: { middlewareMode: true },
+      server: { middlewareMode: true, hmr: { server: httpServer } },
       appType: 'spa'
     });
     app.use(vite.middlewares);
@@ -762,8 +939,8 @@ async function startServer() {
     });
   }
 
-  app.listen(PORT, '0.0.0.0', () => {
-    console.log(`WeatherGPT server active on http://0.0.0.0:${PORT}`);
+  httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`WeatherGPT server active on http://localhost:${PORT}`);
   });
 }
 

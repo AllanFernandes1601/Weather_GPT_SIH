@@ -13,6 +13,7 @@ import { LocationModal } from './components/LocationModal';
 import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { useVoiceCapture } from './hooks/useVoiceCapture';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -21,7 +22,16 @@ export default function App() {
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [, setWeatherError] = useState<string | null>(null);
 
-  const [isVoiceActive, setIsVoiceActive] = useState(false);
+  const {
+    isVoiceActive,
+    voiceError,
+    toggleVoiceCapture,
+    clearVoiceError,
+    diagnostics,
+    liveState,
+    liveTranscript
+  } = useVoiceCapture();
+
   const [isLocationModalOpen, setIsLocationModalOpen] = useState(false);
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [isAlertModalOpen, setIsAlertModalOpen] = useState(false);
@@ -78,10 +88,6 @@ export default function App() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
-
-  const handleToggleVoice = () => {
-    setIsVoiceActive((prev) => !prev);
-  };
 
   const handleSelectLocation = (loc: LocationData) => {
     setActiveLocation(loc);
@@ -199,7 +205,7 @@ export default function App() {
               <WeatherHero
                 location={activeLocation}
                 isVoiceActive={isVoiceActive}
-                onToggleVoice={handleToggleVoice}
+                onToggleVoice={toggleVoiceCapture}
                 onOpenLocationModal={() => setIsLocationModalOpen(true)}
                 isLoading={isLoadingWeather}
               />
@@ -218,7 +224,12 @@ export default function App() {
                 latitude={activeLocation.latitude}
                 longitude={activeLocation.longitude}
                 isVoiceActive={isVoiceActive}
-                onToggleVoice={handleToggleVoice}
+                onToggleVoice={toggleVoiceCapture}
+                voiceError={voiceError}
+                onClearVoiceError={clearVoiceError}
+                diagnostics={diagnostics}
+                liveState={liveState}
+                liveTranscript={liveTranscript}
               />
 
               {/* Section 4: Today's Hourly Forecast */}
