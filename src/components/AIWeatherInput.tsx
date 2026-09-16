@@ -34,7 +34,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
     setIsLoading(true);
     setErrorMessage('');
     try {
-<const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
+      const response = await aiWeatherService.askWeatherGPT(questionText, location, hourlyForecast);
       setActiveResponse(response);
       setQuery(questionText);
     } catch (err) {
