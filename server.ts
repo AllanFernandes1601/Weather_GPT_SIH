@@ -819,8 +819,8 @@ function setupGeminiLiveWebSocket(wss: WebSocketServer) {
 
       clientWs.send(JSON.stringify({ type: 'status', status: 'connecting' }));
 
-  await startHandshake;
-  if (isClosed) return;
+      await startHandshake;
+      if (isClosed) return;
 
       const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
       const liveModel = process.env.GEMINI_LIVE_MODEL || 'gemini-2.5-flash-native-audio-latest';
