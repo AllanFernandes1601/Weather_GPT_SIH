@@ -214,6 +214,9 @@ export default function App() {
               <AIWeatherInput
                 location={activeLocation}
                 hourlyForecast={hourlyForecast}
+                locationName={activeLocation.name}
+                latitude={activeLocation.latitude}
+                longitude={activeLocation.longitude}
                 isVoiceActive={isVoiceActive}
                 onToggleVoice={handleToggleVoice}
               />
