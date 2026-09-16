@@ -31,6 +31,13 @@ function formatAssistanceType(type: GovernmentAssistanceScheme['assistanceType']
   return 'Government Scheme';
 }
 
+function formatProgramType(scheme: GovernmentAssistanceScheme): string {
+  if (scheme.shortName === 'PMSBY') return 'Government Accident Insurance';
+  if (scheme.shortName === 'PMJJBY') return 'Government Life Insurance';
+  if (scheme.shortName === 'RWBCIS') return 'Weather-based Crop Insurance';
+  return formatAssistanceType(scheme.assistanceType);
+}
+
 function statusLabel(scheme: GovernmentAssistanceScheme, status: EligibilityResult['status']): string {
   if (scheme.assistanceType === 'disaster_relief' && status !== 'NOT_ELIGIBLE') {
     return 'Relief may be available through your State/District administration';
@@ -43,7 +50,12 @@ function statusLabel(scheme: GovernmentAssistanceScheme, status: EligibilityResu
 
 function actionLabel(scheme: GovernmentAssistanceScheme): string {
   if (scheme.actionType === 'contact_authority') return 'View official authority information';
-  if (scheme.actionType === 'official_information') return 'Find schemes on myScheme';
+  if (scheme.actionType === 'official_information') {
+    return scheme.id === 'myscheme-discovery'
+      ? 'Find More Schemes on myScheme'
+      : 'View Official Assistance Information';
+  }
+  if (scheme.actionType === 'check_eligibility') return 'Check Eligibility on Official Website';
   return 'View / Apply on Official Website';
 }
 
@@ -54,7 +66,7 @@ export const AssistanceSchemeCard: React.FC<AssistanceSchemeCardProps> = ({ sche
         {scheme.name}{scheme.shortName ? ` (${scheme.shortName})` : ''}
       </h3>
       <p className="mt-2 text-[12px] font-bold uppercase tracking-wider text-[#6E645A]">
-        {formatAssistanceType(scheme.assistanceType)}
+        {formatProgramType(scheme)}
       </p>
       <div className="mt-3 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
         <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[11px] font-bold leading-snug ${STATUS_STYLES[result.status]}`}>

@@ -24,6 +24,7 @@ export type ImpactType =
   | 'employment_loss'
   | 'fishing_equipment_damage'
   | 'business_damage'
+  | 'family_death'
   | 'injury'
   | 'displacement';
 
@@ -47,6 +48,12 @@ export type CropInsuranceStatus = 'insured' | 'not_insured' | 'unknown';
 export type CropNotifiedStatus = 'notified' | 'not_notified' | 'unknown';
 export type FisherStatus = 'fisher' | 'fisheries_worker' | 'not_fisher' | 'unknown';
 export type HouseDamageLevel = 'none' | 'partial' | 'severe' | 'destroyed' | 'unknown';
+export type ResidenceType = 'urban' | 'rural' | 'unknown';
+export type HousingSituation = 'owns_pucca_home' | 'kutcha_home' | 'houseless' | 'unknown';
+export type AgeBand = '18_40' | '41_59' | '60_plus' | 'unknown';
+export type UnorganisedWorkerStatus = 'yes' | 'no' | 'unknown';
+export type MonthlyIncomeBand = 'below_15000' | '15000_25000' | 'above_25000' | 'unknown';
+export type YesNoUnknown = 'yes' | 'no' | 'unknown';
 
 export interface AssistanceUserProfile {
   incidentType?: IncidentType | IncidentType[];
@@ -72,6 +79,14 @@ export interface AssistanceUserProfile {
   dailyWageWorker?: boolean | 'unknown';
   selfEmployed?: boolean | 'unknown';
   fisherStatus?: FisherStatus;
+  residenceType?: ResidenceType;
+  housingSituation?: HousingSituation;
+  hospitalizationRequired?: boolean | 'unknown';
+  familyMemberDeath?: boolean | 'unknown';
+  ageBand?: AgeBand;
+  unorganisedWorker?: UnorganisedWorkerStatus;
+  monthlyIncomeBand?: MonthlyIncomeBand;
+  mainIncomeSourceAffected?: YesNoUnknown;
 }
 
 export type AssistanceProfileField = keyof AssistanceUserProfile;
@@ -128,6 +143,8 @@ export interface GovernmentAssistanceScheme {
   scope: 'national' | 'state' | 'district';
   assistanceType: 'scheme' | 'disaster_relief' | 'insurance' | 'welfare';
   actionType: 'apply' | 'check_eligibility' | 'official_information' | 'contact_authority';
+  resultCategory?: 'direct' | 'additional';
+  candidateRequiresUserFacingMatch?: boolean;
   applicableStates: readonly string[];
   applicableIncidents: readonly IncidentType[];
   applicableImpacts: readonly ImpactType[];

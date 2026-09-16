@@ -37,6 +37,7 @@ const TEXT_IMPACT_MATCHERS: readonly { keywords: readonly string[]; impacts: Imp
   { keywords: ['property', 'belongings', 'household items'], impacts: ['property_damage'] },
   { keywords: ['displaced', 'evacuated', 'left home'], impacts: ['displacement'] },
   { keywords: ['injury', 'injured', 'hurt'], impacts: ['injury'] },
+  { keywords: ['family member died', 'death in family', 'family death'], impacts: ['family_death'] },
   { keywords: ['livestock', 'cattle', 'animals'], impacts: ['livestock_loss'] },
   { keywords: ['fishery', 'fisheries', 'fishing equipment', 'boat', 'nets'], impacts: ['fishing_equipment_damage'] },
   { keywords: ['business', 'shop', 'store'], impacts: ['business_damage'] },

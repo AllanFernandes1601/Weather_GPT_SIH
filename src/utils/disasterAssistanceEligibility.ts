@@ -39,7 +39,15 @@ const PROFILE_LABELS: Readonly<Partial<Record<AssistanceProfileField, string>>> 
   businessDamage: 'business damage',
   dailyWageWorker: 'daily-wage work status',
   fisherStatus: 'fisher status',
-  agriculturalLandAffected: 'agricultural land affected'
+  agriculturalLandAffected: 'agricultural land affected',
+  residenceType: 'residence type',
+  housingSituation: 'housing situation',
+  hospitalizationRequired: 'whether hospitalization was required',
+  familyMemberDeath: 'affected family context',
+  ageBand: 'age band',
+  unorganisedWorker: 'whether you do unorganised work',
+  monthlyIncomeBand: 'monthly income band',
+  mainIncomeSourceAffected: 'whether your main income source was affected'
 };
 
 export function normalizeIncident(input: string | IncidentType | null | undefined): IncidentType[] {
@@ -57,6 +65,30 @@ export function normalizeIncident(input: string | IncidentType | null | undefine
 function profileIncidents(profile: AssistanceUserProfile): IncidentType[] {
   if (Array.isArray(profile.incidentType)) return profile.incidentType;
   return normalizeIncident(profile.incidentType || profile.incidentDescription);
+}
+
+function contradictsKnownUserFacingRule(
+  profile: AssistanceUserProfile,
+  rule: EligibilityRule
+): boolean {
+  if (rule.userFacing === false) return false;
+  const value = profile[rule.field];
+  if (value === undefined || value === null || value === '' || value === 'unknown') return false;
+  if (rule.kind === 'equals') return value !== rule.value;
+  if (rule.kind === 'allowed_values') return typeof value === 'string' && !rule.values.includes(value);
+  return false;
+}
+
+function matchesKnownUserFacingRule(
+  profile: AssistanceUserProfile,
+  rule: EligibilityRule
+): boolean {
+  if (rule.userFacing === false) return false;
+  const value = profile[rule.field];
+  if (value === undefined || value === null || value === '' || value === 'unknown') return false;
+  if (rule.kind === 'equals') return value === rule.value;
+  if (rule.kind === 'allowed_values') return typeof value === 'string' && rule.values.includes(value);
+  return false;
 }
 
 export function getCandidateSchemes(
@@ -80,6 +112,8 @@ export function getCandidateSchemes(
       scheme.applicableImpacts.length === 0;
     if (isUniversalDiscoveryPathway) return true;
     if (!impactMatch) return false;
+    if (scheme.eligibilityRules.some(rule => contradictsKnownUserFacingRule(profile, rule))) return false;
+    if (scheme.candidateRequiresUserFacingMatch && !scheme.eligibilityRules.some(rule => matchesKnownUserFacingRule(profile, rule))) return false;
     return scheme.applicableOccupations.length === 0 || occupationMatch || !occupation || occupation === 'unknown';
   });
 }
@@ -109,10 +143,11 @@ function evaluateRule(
   const value = readField(profile, rule.field);
   const label = PROFILE_LABELS[rule.field] || rule.field;
 
+  if (rule.userFacing === false) {
+    return { confirmation: `Needs official confirmation: ${rule.confirmationLabel || label}.` };
+  }
+
   if (value === undefined || value === null || value === '' || value === 'unknown') {
-    if (rule.userFacing === false) {
-      return { confirmation: `Needs official confirmation: ${rule.confirmationLabel || label}.` };
-    }
     return { missing: `Provide ${label}.` };
   }
 
@@ -193,7 +228,8 @@ export function evaluateAllSchemes(
       }
       if (left.impactIndex !== right.impactIndex) return left.impactIndex - right.impactIndex;
       if (left.occupationMatch !== right.occupationMatch) return left.occupationMatch ? -1 : 1;
-      return left.incidentIndex - right.incidentIndex;
+      if (left.incidentIndex !== right.incidentIndex) return left.incidentIndex - right.incidentIndex;
+      return left.scheme.name.localeCompare(right.scheme.name);
     })
     .map(item => item.result);
 }

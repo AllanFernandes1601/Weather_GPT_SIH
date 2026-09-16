@@ -49,12 +49,37 @@ export const AssistanceResults: React.FC<AssistanceResultsProps> = ({
   );
   const groupedResults = VISIBLE_STATUSES.map(status => ({
     status,
-    items: results.filter(result => result.status === status)
+    items: results.filter(result => result.status === status && schemeById.get(result.schemeId)?.resultCategory !== 'additional')
+  })).filter(group => group.items.length > 0);
+  const additionalGroupedResults = VISIBLE_STATUSES.map(status => ({
+    status,
+    items: results.filter(result => result.status === status && schemeById.get(result.schemeId)?.resultCategory === 'additional')
   })).filter(group => group.items.length > 0);
   const ineligibleResults = results.filter(result => result.status === 'NOT_ELIGIBLE');
   const hasProfileInput = Object.keys(profile).length > 0;
   const hasCandidateResults = results.length > 0;
-  const hasVisibleResults = groupedResults.length > 0;
+  const hasVisibleResults = groupedResults.length > 0 || additionalGroupedResults.length > 0;
+
+  const renderGroups = (groups: typeof groupedResults) => groups.map(group => {
+    const details = GROUP_DETAILS[group.status];
+    return (
+      <section key={group.status} aria-labelledby={`assistance-group-${group.status}`}>
+        <div className="mb-3 flex items-start gap-2">
+          <span className="material-symbols-outlined mt-0.5 text-[21px] text-[#B45309]">{details.icon}</span>
+          <div>
+            <h3 id={`assistance-group-${group.status}`} className="text-[17px] font-bold text-[#1C1814]">{details.title}</h3>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-[#6E645A]">{details.description}</p>
+          </div>
+        </div>
+        <div className="space-y-4">
+          {group.items.map(result => {
+            const scheme = schemeById.get(result.schemeId);
+            return scheme ? <AssistanceSchemeCard key={result.schemeId} scheme={scheme} result={result} /> : null;
+          })}
+        </div>
+      </section>
+    );
+  });
 
   return (
     <section
@@ -107,26 +132,24 @@ export const AssistanceResults: React.FC<AssistanceResultsProps> = ({
           </div>
         ) : (
           <div className="space-y-8">
-            {groupedResults.map(group => {
-              const details = GROUP_DETAILS[group.status];
-              return (
-                <section key={group.status} aria-labelledby={`assistance-group-${group.status}`}>
-                  <div className="mb-3 flex items-start gap-2">
-                    <span className="material-symbols-outlined mt-0.5 text-[21px] text-[#B45309]">{details.icon}</span>
-                    <div>
-                      <h3 id={`assistance-group-${group.status}`} className="text-[17px] font-bold text-[#1C1814]">{details.title}</h3>
-                      <p className="mt-0.5 text-[12px] leading-relaxed text-[#6E645A]">{details.description}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    {group.items.map(result => {
-                      const scheme = schemeById.get(result.schemeId);
-                      return scheme ? <AssistanceSchemeCard key={result.schemeId} scheme={scheme} result={result} /> : null;
-                    })}
-                  </div>
-                </section>
-              );
-            })}
+            {groupedResults.length > 0 && (
+              <section className="space-y-5" aria-labelledby="primary-assistance-results">
+                <div>
+                  <h3 id="primary-assistance-results" className="text-[18px] font-bold text-[#1C1814]">Most relevant to what happened</h3>
+                  <p className="mt-1 text-[12px] text-[#6E645A]">Direct insurance, named programs, and impact-specific disaster relief.</p>
+                </div>
+                {renderGroups(groupedResults)}
+              </section>
+            )}
+            {additionalGroupedResults.length > 0 && (
+              <section className="space-y-5 border-t border-[#E5DCCF]/70 pt-6" aria-labelledby="additional-assistance-results">
+                <div>
+                  <h3 id="additional-assistance-results" className="text-[18px] font-bold text-[#1C1814]">Additional government support you may want to check</h3>
+                  <p className="mt-1 text-[12px] text-[#6E645A]">These programs are not disaster compensation, but may be relevant after the incident.</p>
+                </div>
+                {renderGroups(additionalGroupedResults)}
+              </section>
+            )}
           </div>
         )}
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AssistanceUserProfile } from '../types';
 import { DisasterIncidentForm } from './DisasterIncidentForm';
 import { AssistanceQuestions } from './AssistanceQuestions';
@@ -16,6 +16,18 @@ export const SafetyHub: React.FC = () => {
   const [profile, setProfile] = useState<AssistanceUserProfile>({});
   const [currentStep, setCurrentStep] = useState<AssistanceStep>(1);
   const [hasSubmittedIncident, setHasSubmittedIncident] = useState(false);
+  const workflowTopRef = useRef<HTMLDivElement>(null);
+
+  const scrollWorkflowIntoView = () => {
+    workflowTopRef.current?.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    });
+  };
+
+  useEffect(() => {
+    scrollWorkflowIntoView();
+  }, [currentStep]);
 
   const startOver = () => {
     setProfile({});
@@ -27,6 +39,7 @@ export const SafetyHub: React.FC = () => {
     setProfile({});
     setCurrentStep(1);
     setHasSubmittedIncident(false);
+    scrollWorkflowIntoView();
   };
 
   const handleIncidentSubmit = (nextProfile: AssistanceUserProfile) => {
@@ -76,7 +89,7 @@ export const SafetyHub: React.FC = () => {
         </div>
       </section>
 
-      <section className="space-y-5 rounded-3xl border border-[#E5DCCF]/70 bg-[#FFFDF9] p-5 shadow-sm sm:p-8">
+      <section ref={workflowTopRef} className="scroll-mt-24 space-y-5 rounded-3xl border border-[#E5DCCF]/70 bg-[#FFFDF9] p-5 shadow-sm sm:p-8">
         <div className="flex flex-col gap-4 border-b border-[#E5DCCF]/70 pb-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#B45309]">Government Assistance</p>

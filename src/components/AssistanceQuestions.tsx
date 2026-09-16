@@ -25,7 +25,15 @@ type QuestionField =
   | 'businessDamage'
   | 'dailyWageWorker'
   | 'fisherStatus'
-  | 'agriculturalLandAffected';
+  | 'agriculturalLandAffected'
+  | 'residenceType'
+  | 'housingSituation'
+  | 'hospitalizationRequired'
+  | 'familyMemberDeath'
+  | 'ageBand'
+  | 'unorganisedWorker'
+  | 'monthlyIncomeBand'
+  | 'mainIncomeSourceAffected';
 
 type QuestionOption = {
   label: string;
@@ -43,6 +51,31 @@ interface AssistanceQuestionDefinition {
 }
 
 const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
+  {
+    field: 'ageBand',
+    engineLabel: 'age band',
+    question: 'Which age group are you in?',
+    supportingText: 'Choose a broad age group only.',
+    inputType: 'choice',
+    options: [
+      { label: '18–40', value: '18_40' },
+      { label: '41–59', value: '41_59' },
+      { label: '60 or older', value: '60_plus' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'residenceType',
+    engineLabel: 'residence type',
+    question: 'Do you live in an urban or rural area?',
+    supportingText: 'Choose the broad area type only. Do not enter an address.',
+    inputType: 'choice',
+    options: [
+      { label: 'Urban', value: 'urban' },
+      { label: 'Rural', value: 'rural' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
   {
     field: 'state',
     engineLabel: 'state',
@@ -239,6 +272,80 @@ const QUESTION_DEFINITIONS: readonly AssistanceQuestionDefinition[] = [
       { label: 'No', value: false },
       { label: 'Not sure', value: 'unknown' }
     ]
+  },
+  {
+    field: 'housingSituation',
+    engineLabel: 'housing situation',
+    question: 'Which best describes your housing situation?',
+    supportingText: 'No ownership documents or address are needed here.',
+    inputType: 'choice',
+    options: [
+      { label: 'Own a pucca home', value: 'owns_pucca_home' },
+      { label: 'Kutcha home', value: 'kutcha_home' },
+      { label: 'Houseless', value: 'houseless' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'hospitalizationRequired',
+    engineLabel: 'whether hospitalization was required',
+    question: 'Did the injury require hospitalization?',
+    supportingText: 'No medical or graphic details are needed.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'familyMemberDeath',
+    engineLabel: 'affected family context',
+    question: 'Are you checking support as a family member or nominee after a disaster-related death?',
+    supportingText: 'Answer only Yes, No, or Not sure. No personal or medical details are needed.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: true },
+      { label: 'No', value: false },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'unorganisedWorker',
+    engineLabel: 'whether you do unorganised work',
+    question: 'Do you work outside a formal employer or organised workplace?',
+    supportingText: 'Daily-wage, casual, and many self-employed jobs may fit this description.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: 'yes' },
+      { label: 'No', value: 'no' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'monthlyIncomeBand',
+    engineLabel: 'monthly income band',
+    question: 'What is your approximate monthly income band?',
+    supportingText: 'Choose a broad range; do not enter exact income or financial-account details.',
+    inputType: 'choice',
+    options: [
+      { label: 'Below Rs. 15,000', value: 'below_15000' },
+      { label: 'Rs. 15,000–25,000', value: '15000_25000' },
+      { label: 'Above Rs. 25,000', value: 'above_25000' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
+  },
+  {
+    field: 'mainIncomeSourceAffected',
+    engineLabel: 'whether your main income source was affected',
+    question: 'Was your main source of income affected by the disaster?',
+    supportingText: 'Answer about the main work or business affected by this incident.',
+    inputType: 'choice',
+    options: [
+      { label: 'Yes', value: 'yes' },
+      { label: 'No', value: 'no' },
+      { label: 'Not sure', value: 'unknown' }
+    ]
   }
 ];
 
@@ -335,6 +442,30 @@ export const AssistanceQuestions: React.FC<AssistanceQuestionsProps> = ({
         break;
       case 'agriculturalLandAffected':
         if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, agriculturalLandAffected: value });
+        break;
+      case 'residenceType':
+        if (value === 'urban' || value === 'rural' || value === 'unknown') onChange({ ...profile, residenceType: value });
+        break;
+      case 'housingSituation':
+        if (value === 'owns_pucca_home' || value === 'kutcha_home' || value === 'houseless' || value === 'unknown') onChange({ ...profile, housingSituation: value });
+        break;
+      case 'hospitalizationRequired':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, hospitalizationRequired: value });
+        break;
+      case 'familyMemberDeath':
+        if (typeof value === 'boolean' || value === 'unknown') onChange({ ...profile, familyMemberDeath: value });
+        break;
+      case 'ageBand':
+        if (value === '18_40' || value === '41_59' || value === '60_plus' || value === 'unknown') onChange({ ...profile, ageBand: value });
+        break;
+      case 'unorganisedWorker':
+        if (value === 'yes' || value === 'no' || value === 'unknown') onChange({ ...profile, unorganisedWorker: value });
+        break;
+      case 'monthlyIncomeBand':
+        if (value === 'below_15000' || value === '15000_25000' || value === 'above_25000' || value === 'unknown') onChange({ ...profile, monthlyIncomeBand: value });
+        break;
+      case 'mainIncomeSourceAffected':
+        if (value === 'yes' || value === 'no' || value === 'unknown') onChange({ ...profile, mainIncomeSourceAffected: value });
         break;
     }
   };
