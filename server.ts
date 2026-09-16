@@ -4,6 +4,7 @@ import path from 'path';
 import { spawn } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
+import { smsRouter } from './server/sms/routes';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -398,6 +399,9 @@ For historical-only answers, timing should say that live timing is unavailable. 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
+
+// Location-aware SMS weather alert subscriptions
+app.use('/api/sms', smsRouter);
 
 // Generic structured retrieval endpoint. Numerical records use SQL, not embeddings.
 app.post('/api/rag/retrieve', async (req, res) => {

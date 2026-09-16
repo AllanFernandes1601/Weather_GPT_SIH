@@ -14,3 +14,7 @@ coverage/
 rag/data/*.sqlite
 rag/data/*.sqlite-shm
 rag/data/*.sqlite-wal
+
+# Local SMS subscription data
+data/sms_subscriptions.json
+data/sms_subscriptions.json.*.tmp
