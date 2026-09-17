@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { NavTab, LocationData } from '../types';
+import { useAlerts, formatAlertLocation } from '../context/AlertContext';
+import { formatAlertType, formatSeverity } from '../utils/alertLabels';
 
 interface NavbarProps {
   currentTab: NavTab;
@@ -19,6 +21,42 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAlertModal
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+  const { alerts, unreadCount, markAlertAsRead, markAllAsRead, selectAlert, simulateNotification } = useAlerts();
+
+  // Close dropdown on outside click or Escape
+  useEffect(() => {
+    if (!showNotifications) return;
+
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setShowNotifications(false);
+      }
+    };
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setShowNotifications(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showNotifications]);
+
+  const formatTimeString = (iso: string) => {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } catch {
+      return iso;
+    }
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-xl border-b border-[#E5DCCF]/60 shadow-[0_1px_12px_rgba(46,40,35,0.04)] transition-all">
@@ -77,7 +115,9 @@ export const Navbar: React.FC<NavbarProps> = ({
             }`}
           >
             <span>Alerts</span>
-            <span className="h-2 w-2 rounded-full bg-[#EA580C] animate-pulse"></span>
+            {unreadCount > 0 && (
+              <span className="h-2 w-2 rounded-full bg-[#EA580C] animate-pulse"></span>
+            )}
           </button>
           <button
             type="button"
@@ -140,53 +180,147 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
-          {/* Notifications Trigger */}
-          <div className="relative">
+          {/* Notifications Trigger & Dropdown */}
+          <div className="relative" ref={dropdownRef}>
             <button
               type="button"
-              onClick={() => setShowNotifications(!showNotifications)}
-              className="relative p-2 rounded-full bg-[#F5F0E8] hover:bg-[#E8DEC8] text-[#6E645A] hover:text-[#1C1814] active:scale-95 transition-all border border-[#E5DCCF]/60 shadow-sm"
-              title="Active Weather Notifications"
+              onClick={() => setShowNotifications((prev) => !prev)}
+              className="relative p-2 rounded-full bg-[#F5F0E8] hover:bg-[#E8DEC8] text-[#6E645A] hover:text-[#1C1814] active:scale-95 transition-all border border-[#E5DCCF]/60 shadow-sm cursor-pointer"
+              title={unreadCount > 0 ? `${unreadCount} Unread Weather Notifications` : 'Weather Notifications'}
+              aria-label={unreadCount > 0 ? `Notifications (${unreadCount} unread)` : 'Notifications'}
+              aria-expanded={showNotifications}
+              aria-haspopup="true"
               id="nav-notifications-btn"
             >
               <span className="material-symbols-outlined text-[20px]">notifications</span>
-              <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-[#EA580C] ring-2 ring-white animate-pulse"></span>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[#EA580C] text-white text-[10px] font-bold flex items-center justify-center ring-2 ring-white shadow-sm animate-pulse">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
             </button>
 
-            {/* Notifications Popover Dropdown */}
+            {/* Notifications Popover Dropdown (360-400px desktop, responsive on mobile) */}
             {showNotifications && (
               <div 
-                className="absolute right-0 mt-2 w-80 sm:w-88 rounded-2xl bg-[#FFFDF9] border border-[#E5DCCF] shadow-xl p-4 z-50 text-left"
+                className="absolute right-0 mt-2 w-[calc(100vw-2rem)] sm:w-[380px] max-w-[400px] rounded-2xl bg-[#FFFDF9] border border-[#E5DCCF] shadow-xl p-4 z-50 text-left animate-in fade-in duration-150"
                 id="notifications-popover"
+                role="region"
+                aria-label="Notifications preview"
               >
-                <div className="flex items-center justify-between pb-2 border-b border-[#E5DCCF]">
-                  <span className="text-[13px] font-bold text-[#1C1814]">Live Advisories</span>
-                  <span className="text-[11px] text-[#B45309] font-semibold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    1 Active Alert
-                  </span>
-                </div>
-                <div 
-                  onClick={() => {
-                    setShowNotifications(false);
-                    onOpenAlertModal();
-                  }}
-                  className="mt-3 p-3 rounded-xl bg-amber-50/70 border border-amber-200/80 hover:bg-amber-100/70 cursor-pointer transition-colors"
-                >
-                  <div className="flex items-center gap-1.5 text-[#C2410C] font-semibold text-[12px]">
-                    <span className="material-symbols-outlined text-[16px]">warning</span>
-                    <span>Moderate Rain Advisory</span>
+                {/* Header */}
+                <div className="flex items-center justify-between pb-2.5 border-b border-[#E5DCCF]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[14px] font-bold text-[#1C1814]">Notifications</span>
+                    {unreadCount > 0 && (
+                      <span className="text-[11px] font-semibold text-[#B45309] bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                        {unreadCount} unread
+                      </span>
+                    )}
                   </div>
-                  <p className="text-[12px] text-[#1C1814] mt-1 font-medium leading-snug">
-                    Heavy rain & waterlogging expected in Eastern & Southern sectors (3:30 - 8:00 PM).
-                  </p>
-                  <span className="text-[11px] text-[#B45309] font-bold mt-2 inline-block">
-                    View Route Precautions →
-                  </span>
+                  {unreadCount > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => markAllAsRead()}
+                      className="text-[11px] font-semibold text-[#B45309] hover:text-[#92400E] hover:underline cursor-pointer transition-colors"
+                      id="notifications-mark-all-read"
+                    >
+                      Mark all as read
+                    </button>
+                  )}
                 </div>
-                <div className="mt-3 text-center">
-                  <span className="text-[11px] text-[#8E9197]">
-                    Demo weather notification feed
-                  </span>
+
+                {/* Previews List (top 3-5 alerts) */}
+                <div className="mt-2.5 space-y-2 max-h-[320px] overflow-y-auto">
+                  {alerts.length === 0 ? (
+                    <div className="py-6 px-4 text-center space-y-1.5" id="notifications-empty-state">
+                      <div className="w-9 h-9 rounded-full bg-amber-50 text-[#B45309] mx-auto flex items-center justify-center border border-amber-200/80 mb-2">
+                        <span className="material-symbols-outlined text-[20px]">notifications_none</span>
+                      </div>
+                      <p className="text-[13px] font-bold text-[#1C1814]">No new weather alerts</p>
+                      <p className="text-[11px] text-[#6E645A] leading-relaxed">
+                        High-priority Open-Meteo alerts will appear here.
+                      </p>
+                    </div>
+                  ) : (
+                    alerts.slice(0, 4).map((alert) => (
+                      <div
+                        key={alert.id}
+                        onClick={() => {
+                          markAlertAsRead(alert.id);
+                          selectAlert(alert.id);
+                          setShowNotifications(false);
+                          onSelectTab('alerts');
+                        }}
+                        className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
+                          alert.read
+                            ? 'bg-[#FAF8F5]/60 hover:bg-[#F5F0E8] border-[#E5DCCF]/70 text-[#6E645A]'
+                            : 'bg-amber-50/70 hover:bg-amber-100/70 border-amber-200/90 text-[#1C1814]'
+                        }`}
+                        id={`notification-preview-${alert.id}`}
+                      >
+                        <div className="flex items-center justify-between gap-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className={`text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full border ${
+                                alert.severity === 'severe'
+                                  ? 'text-red-700 bg-red-50 border-red-200'
+                                  : alert.severity === 'high'
+                                  ? 'text-orange-700 bg-orange-50 border-orange-200'
+                                  : 'text-amber-800 bg-amber-50 border-amber-200'
+                              }`}
+                            >
+                              {formatSeverity(alert.severity)}
+                            </span>
+                            <span className="text-[12px] font-bold text-[#1C1814] truncate">
+                              {formatAlertType(alert.alertType)} Alert
+                            </span>
+                            {alert.mode === 'demo' && (
+                              <span className="text-[8px] font-bold uppercase text-[#B45309] bg-amber-100 px-1 rounded border border-amber-300">
+                                SIMULATED
+                              </span>
+                            )}
+                          </div>
+                          <span className="text-[10px] text-[#8E9197] shrink-0">
+                            {formatTimeString(alert.detectedAt)}
+                          </span>
+                        </div>
+
+                        <div className="text-[11px] font-semibold text-[#B45309] mt-1 truncate">
+                          {formatAlertLocation(alert.location)}
+                        </div>
+
+                        <p className="text-[11px] text-[#6E645A] line-clamp-2 mt-0.5 leading-snug">
+                          {alert.message}
+                        </p>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Footer: Actions */}
+                <div className="mt-3 pt-2 border-t border-[#E5DCCF]/60 space-y-1.5">
+                  <button
+                    type="button"
+                    onClick={() => simulateNotification(activeLocation.name)}
+                    className="w-full py-1.5 px-3 text-center text-[12px] font-semibold text-[#6E645A] hover:text-[#1C1814] hover:bg-[#F5F0E8] rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-dashed border-[#E5DCCF]"
+                    id="notifications-simulate-btn"
+                  >
+                    <span className="material-symbols-outlined text-[16px] text-[#B45309]">notifications_active</span>
+                    <span>Simulate Notification</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowNotifications(false);
+                      onSelectTab('alerts');
+                    }}
+                    className="w-full py-2 px-3 text-center text-[12px] font-bold text-[#B45309] hover:text-[#92400E] bg-amber-50/70 hover:bg-amber-100/80 rounded-xl transition-colors flex items-center justify-center gap-1 cursor-pointer active:scale-95"
+                    id="notifications-view-all-btn"
+                  >
+                    <span>View all alerts</span>
+                    <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -238,7 +372,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           }`}
         >
           <span>Alerts</span>
-          <span className="h-1.5 w-1.5 rounded-full bg-[#EA580C]"></span>
+          {unreadCount > 0 && (
+            <span className="h-1.5 w-1.5 rounded-full bg-[#EA580C] animate-pulse"></span>
+          )}
         </button>
         <button
           type="button"

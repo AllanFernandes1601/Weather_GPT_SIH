@@ -6,6 +6,11 @@ import { getSmsProvider } from './providers';
 import { evaluateWeatherAlerts, WeatherTelemetryInput } from './alertEngine';
 import { processAlertDelivery, AlertDeliverySummary } from './deliveryPipeline';
 import { fetchWeatherTelemetryForSms } from './weatherTelemetryService';
+import { broadcastRealtimeWeatherAlert } from '../alerts/realtimeAlertHub';
+import {
+  evaluateRealtimeAlertDedup,
+  recordRealtimeAlertBroadcast
+} from '../alerts/realtimeAlertDedup';
 
 export interface LocationCell {
   cellKey: string;
@@ -27,6 +32,9 @@ export interface SmsAlertCycleSummary {
   totalSuppressed: number;
   totalFailed: number;
   deliveries: AlertDeliverySummary[];
+  realtimeAlertsEligible?: number;
+  realtimeAlertsBroadcast?: number;
+  realtimeAlertsSuppressed?: number;
 }
 
 export interface SmsCycleOptions {
@@ -129,7 +137,10 @@ export async function runSmsAlertCycle(
       totalSent: 0,
       totalSuppressed: 0,
       totalFailed: 0,
-      deliveries: []
+      deliveries: [],
+      realtimeAlertsEligible: 0,
+      realtimeAlertsBroadcast: 0,
+      realtimeAlertsSuppressed: 0
     };
   }
 
@@ -154,7 +165,10 @@ export async function runSmsAlertCycle(
       totalSent: 0,
       totalSuppressed: 0,
       totalFailed: 0,
-      deliveries: []
+      deliveries: [],
+      realtimeAlertsEligible: 0,
+      realtimeAlertsBroadcast: 0,
+      realtimeAlertsSuppressed: 0
     };
 
     // 2. Return cleanly if no active subscribers
@@ -195,8 +209,25 @@ export async function runSmsAlertCycle(
 
       summary.alertsGenerated += alerts.length;
 
-      // 6. Deliver each alert via delivery pipeline
+      // 6. Deliver each alert via delivery pipeline and broadcast to connected SSE clients
       for (const alert of alerts) {
+        // Real-time browser alert evaluation (HIGH / SEVERE only, deduplicated, 60m cooldown)
+        try {
+          const dedupDecision = evaluateRealtimeAlertDedup(alert);
+          if (dedupDecision.isEligible) {
+            summary.realtimeAlertsEligible = (summary.realtimeAlertsEligible || 0) + 1;
+            if (dedupDecision.shouldBroadcast) {
+              recordRealtimeAlertBroadcast(alert, dedupDecision);
+              broadcastRealtimeWeatherAlert(alert, cell.locationName);
+              summary.realtimeAlertsBroadcast = (summary.realtimeAlertsBroadcast || 0) + 1;
+            } else {
+              summary.realtimeAlertsSuppressed = (summary.realtimeAlertsSuppressed || 0) + 1;
+            }
+          }
+        } catch (realtimeErr) {
+          console.warn('[Realtime Alert Hub] Broadcast evaluation notice:', realtimeErr);
+        }
+
         try {
           const deliverySummary = await processAlertDelivery(
             alert,
@@ -245,8 +276,9 @@ export function startSmsAlertScheduler(): boolean {
 
   const intervalMinutes = getSchedulerIntervalMinutes();
   const intervalMs = intervalMinutes * 60 * 1000;
+  const providerType = (process.env.SMS_PROVIDER || 'mock').toLowerCase();
 
-  console.log(`[SMS Scheduler] Initialized: evaluating alerts every ${intervalMinutes} minute(s).`);
+  console.log(`[SMS Scheduler] Enabled: evaluating alerts every ${intervalMinutes} minute(s) using ${providerType} provider.`);
 
   // Run initial cycle asynchronously without blocking startup
   runSmsAlertCycle().catch((err) => {

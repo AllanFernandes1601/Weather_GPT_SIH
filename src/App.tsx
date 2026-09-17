@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { NavTab, LocationData, HourlyForecastItem, RemoteLocationResult } from './types';
 import { LOCATIONS, HOURLY_FORECAST_DATA, ACTIVE_ALERT } from './data/mockWeatherData';
 import { weatherService } from './services/weatherService';
@@ -14,6 +14,26 @@ import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { AlertsPage } from './pages/AlertsPage';
+import { AlertProvider, useAlerts } from './context/AlertContext';
+import { WeatherAlertToast } from './components/WeatherAlertToast';
+
+const GlobalAlertToast: React.FC<{ onNavigateToAlerts: (alertId: string | number) => void }> = ({
+  onNavigateToAlerts
+}) => {
+  const { activeToast, dismissToast, selectAlert } = useAlerts();
+
+  return (
+    <WeatherAlertToast
+      alert={activeToast}
+      onDismiss={dismissToast}
+      onSelect={(alertId) => {
+        selectAlert(String(alertId));
+        onNavigateToAlerts(alertId);
+      }}
+    />
+  );
+};
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -67,6 +87,14 @@ export default function App() {
   useEffect(() => {
     fetchWeatherForStation(LOCATIONS[0]);
   }, [fetchWeatherForStation]);
+
+  // Periodic 5-minute background telemetry refresh (Part 4)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchWeatherForStation(activeLocation);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchWeatherForStation, activeLocation]);
 
   // Global keyboard shortcut for ⌘K / Ctrl+K
   useEffect(() => {
@@ -180,7 +208,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1C1814] flex flex-col justify-between selection:bg-[#B45309] selection:text-white">
+    <AlertProvider>
+      <GlobalAlertToast
+        onNavigateToAlerts={() => {
+          setCurrentTab('alerts');
+        }}
+      />
+      <div className="min-h-screen bg-[#FAF8F5] text-[#1C1814] flex flex-col justify-between selection:bg-[#B45309] selection:text-white">
       {/* 1. TOP APP HEADER NAVBAR */}
       <Navbar
         currentTab={currentTab}
@@ -239,6 +273,13 @@ export default function App() {
               location={activeLocation}
               onBackToHome={() => setCurrentTab('home')}
               onOpenLocationModal={() => setIsLocationModalOpen(true)}
+            />
+          ) : currentTab === 'alerts' ? (
+            <AlertsPage
+              location={activeLocation}
+              onBackToHome={() => setCurrentTab('home')}
+              onOpenLocationModal={() => setIsLocationModalOpen(true)}
+              onRefreshWeather={() => fetchWeatherForStation(activeLocation)}
             />
           ) : (
             <PlaceholderPage
@@ -302,5 +343,6 @@ export default function App() {
         </div>
       </footer>
     </div>
+    </AlertProvider>
   );
 }

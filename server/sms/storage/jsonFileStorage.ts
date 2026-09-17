@@ -84,8 +84,8 @@ export class JsonFileSubscriptionStorage implements ISmsSubscriptionStorage {
       } catch (renameErr: any) {
         // Fallback for Windows locking anomalies
         if (renameErr.code === 'EEXIST' || renameErr.code === 'EPERM') {
-          await fs.unlink(this.filePath).catch(() => {});
-          await fs.rename(tmpPath, this.filePath);
+          await fs.copyFile(tmpPath, this.filePath);
+          await fs.unlink(tmpPath).catch(() => {});
         } else {
           throw renameErr;
         }
@@ -253,8 +253,8 @@ export class JsonFileDeliveryStorage implements ISmsDeliveryStorage {
         await fs.rename(tmpPath, this.filePath);
       } catch (renameErr: any) {
         if (renameErr.code === 'EEXIST' || renameErr.code === 'EPERM') {
-          await fs.unlink(this.filePath).catch(() => {});
-          await fs.rename(tmpPath, this.filePath);
+          await fs.copyFile(tmpPath, this.filePath);
+          await fs.unlink(tmpPath).catch(() => {});
         } else {
           throw renameErr;
         }

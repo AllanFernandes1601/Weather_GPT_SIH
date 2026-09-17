@@ -5,6 +5,7 @@ import { spawn } from 'child_process';
 import { createServer as createViteServer } from 'vite';
 import { GoogleGenAI } from '@google/genai';
 import { smsRouter } from './server/sms/routes';
+import { alertsRouter } from './server/alerts/realtimeAlertHub';
 import { fetchRawOpenMeteoWeather } from './server/sms/weatherTelemetryService';
 import { startSmsAlertScheduler, stopSmsAlertScheduler } from './server/sms/scheduler';
 
@@ -404,6 +405,9 @@ app.get('/api/health', (_req, res) => {
 
 // Location-aware SMS weather alert subscriptions
 app.use('/api/sms', smsRouter);
+
+// Real-time browser weather alerts (Server-Sent Events)
+app.use('/api/alerts', alertsRouter);
 
 // Generic structured retrieval endpoint. Numerical records use SQL, not embeddings.
 app.post('/api/rag/retrieve', async (req, res) => {

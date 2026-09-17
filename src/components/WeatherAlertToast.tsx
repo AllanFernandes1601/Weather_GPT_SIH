@@ -3,17 +3,21 @@ import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
 import { formatAlertType, formatSeverity } from '../utils/alertLabels';
 
 export interface WeatherAlertToastData {
-  id: number;
+  id: string | number;
   location: string;
   body: string;
+  alertType?: string;
+  severity?: string;
+  mode?: 'live' | 'demo';
 }
 
 interface WeatherAlertToastProps {
   alert: WeatherAlertToastData | null;
   onDismiss: () => void;
+  onSelect?: (alertId: string | number) => void;
 }
 
-export const WeatherAlertToast: React.FC<WeatherAlertToastProps> = ({ alert, onDismiss }) => {
+export const WeatherAlertToast: React.FC<WeatherAlertToastProps> = ({ alert, onDismiss, onSelect }) => {
   const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
@@ -21,7 +25,7 @@ export const WeatherAlertToast: React.FC<WeatherAlertToastProps> = ({ alert, onD
       return undefined;
     }
 
-    const timeoutId = window.setTimeout(onDismiss, 6000);
+    const timeoutId = window.setTimeout(onDismiss, 7000);
     return () => window.clearTimeout(timeoutId);
   }, [alert, onDismiss]);
 
@@ -43,28 +47,53 @@ export const WeatherAlertToast: React.FC<WeatherAlertToastProps> = ({ alert, onD
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-[#B45309] border border-amber-200">
               <span className="material-symbols-outlined text-[22px]">thunderstorm</span>
             </div>
-            <div className="min-w-0 flex-1">
+            <div
+              className="min-w-0 flex-1 cursor-pointer"
+              onClick={() => {
+                if (onSelect) {
+                  onSelect(alert.id);
+                }
+                onDismiss();
+              }}
+            >
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                 <span className="text-[12px] font-bold text-[#6E645A]">WeatherGPT</span>
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#92400E]">
-                  Demo Mode
-                </span>
+                {alert.mode === 'live' ? (
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-800 border border-emerald-300 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse" />
+                    <span>LIVE ALERT</span>
+                  </span>
+                ) : (
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-[#92400E] border border-amber-300">
+                    SIMULATED
+                  </span>
+                )}
               </div>
               <div className="mt-1 flex flex-wrap items-center gap-2">
-                <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-700 border border-red-200">
-                  {formatSeverity('high')}
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-bold tracking-wider border ${
+                    alert.severity === 'severe'
+                      ? 'text-red-700 bg-red-50 border-red-200'
+                      : alert.severity === 'high'
+                      ? 'text-orange-700 bg-orange-50 border-orange-200'
+                      : 'text-amber-800 bg-amber-50 border-amber-200'
+                  }`}
+                >
+                  {formatSeverity(alert.severity || 'high')}
                 </span>
-                <h3 className="text-[15px] font-bold text-[#1C1814]">{formatAlertType('heavy_rain')} Alert</h3>
+                <h3 className="text-[15px] font-bold text-[#1C1814]">
+                  {formatAlertType(alert.alertType || 'heavy_rain')} Alert
+                </h3>
               </div>
               <p className="text-[12px] font-semibold text-[#B45309]">{alert.location}</p>
-              <p className="mt-2 text-[13px] leading-relaxed text-[#6E645A]">{alert.body}</p>
+              <p className="mt-2 text-[13px] leading-relaxed text-[#6E645A] line-clamp-2">{alert.body}</p>
             </div>
             <button
               type="button"
               onClick={onDismiss}
               aria-label="Dismiss weather alert"
               title="Dismiss weather alert"
-              className="shrink-0 rounded-lg p-1 text-[#8E9197] transition-colors hover:bg-[#F5F0E8] hover:text-[#1C1814] focus:outline-none focus:ring-2 focus:ring-amber-500/30"
+              className="shrink-0 rounded-lg p-1 text-[#8E9197] transition-colors hover:bg-[#F5F0E8] hover:text-[#1C1814] focus:outline-none focus:ring-2 focus:ring-amber-500/30 cursor-pointer"
             >
               <span className="material-symbols-outlined text-[20px]">close</span>
             </button>

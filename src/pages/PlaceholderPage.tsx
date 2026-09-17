@@ -1,20 +1,18 @@
 import React from 'react';
 import { NavTab, LocationData } from '../types';
-import { ACTIVE_ALERT } from '../data/mockWeatherData';
 import { SafetyHub } from '../components/SafetyHub';
 
 interface PlaceholderPageProps {
   tab: NavTab;
   onBackToHome: () => void;
   location: LocationData;
-  onOpenAlertModal: () => void;
+  onOpenAlertModal?: () => void;
 }
 
 export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
   tab,
   onBackToHome,
-  location,
-  onOpenAlertModal
+  location
 }) => {
   const getTabDetails = () => {
     switch (tab) {
@@ -57,53 +55,6 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
               <div className="p-4 rounded-2xl bg-[#FFFDF9] border border-[#E5DCCF]/60 text-[13px] text-[#6E645A] flex items-center justify-between">
                 <span>This seven-day view is illustrative; the home-page hourly forecast uses live Open-Meteo data.</span>
                 <span className="font-semibold text-[#B45309]">Demo Forecast View</span>
-              </div>
-            </div>
-          )
-        };
-      case 'alerts':
-        return {
-          title: 'Weather Preparedness Scenarios',
-          subtitle: `Demonstration guidance for ${location.state}; no official live alert feed is connected`,
-          icon: 'warning',
-          tag: 'Civil Protection',
-          content: (
-            <div className="space-y-6">
-              <div className="p-6 rounded-3xl bg-white border border-[#E5DCCF]/70 shadow-sm space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-[#EA580C] text-[22px]">warning</span>
-                    <h4 className="font-bold text-[16px] text-[#1C1814]">
-                      {ACTIVE_ALERT.title}
-                    </h4>
-                  </div>
-                  <span className="text-[11px] font-bold text-[#EA580C] bg-orange-50 px-2.5 py-0.5 rounded-full border border-orange-200">
-                    Demo Scenario
-                  </span>
-                </div>
-                <p className="text-[14px] text-[#6E645A]">
-                  {ACTIVE_ALERT.description}
-                </p>
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/70">
-                  <h5 className="text-[12px] uppercase font-bold text-[#B45309] tracking-wider mb-2">
-                    Critical Commute Corridors
-                  </h5>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {ACTIVE_ALERT.affectedCorridors.map((c, i) => (
-                      <div key={i} className="text-[13px] font-medium text-[#1C1814] flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-[#EA580C]" />
-                        <span>{c}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  onClick={onOpenAlertModal}
-                  className="px-5 py-2.5 rounded-full bg-[#D97706] hover:bg-[#B45309] text-white font-semibold text-[13px] transition-colors cursor-pointer"
-                >
-                  View Route Precautions &amp; Evacuation Guidelines
-                </button>
               </div>
             </div>
           )

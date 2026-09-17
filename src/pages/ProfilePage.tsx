@@ -132,12 +132,20 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.85fr)] items-start gap-6">
         {/* SECTION 1: WEATHER ALERT DELIVERY (SMS SUBSCRIPTION) */}
         <div className="space-y-3 min-w-0" id="profile-section-sms-delivery">
-        <div className="px-2">
-          <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1C1814]">
-            Weather Alert Delivery
-          </h2>
-          <p className="text-[13px] text-[#6E645A]">
-            Location-aware emergency SMS alerts evaluated deterministically by WeatherGPT.
+        <div className="px-2 space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-[18px] sm:text-[20px] font-bold text-[#1C1814]">
+              Weather Alert Delivery
+            </h2>
+            <span className="text-[10px] font-bold uppercase text-[#B45309] bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+              Future Delivery Channel
+            </span>
+          </div>
+          <p className="text-[13px] font-semibold text-[#B45309]">
+            SMS alerts are planned as a future implementation.
+          </p>
+          <p className="text-[12px] text-[#6E645A] leading-relaxed">
+            Production provider support is already implemented, while live telecom delivery depends on external provider activation.
           </p>
         </div>
         <SmsAlertSubscription
@@ -220,12 +228,12 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-[18px] text-[#B45309]">sms</span>
                 <span id="sms-alerts-label" className="text-[14px] font-bold text-[#1C1814]">SMS Emergency Alerts</span>
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
-                  Active Channel
+                <span className="text-[10px] font-semibold text-[#B45309] bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                  Future Delivery Channel
                 </span>
               </div>
               <p className="text-[12px] text-[#6E645A] leading-relaxed">
-                Receive direct telecom dispatches to your verified mobile number for severe weather warnings.
+                Receive direct telecom dispatches to your verified mobile number once external carrier integration is activated.
               </p>
             </div>
             <button
@@ -278,21 +286,21 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
           </div>
         </div>
 
-          {/* DEMO NOTIFICATIONS */}
+          {/* SIMULATED NOTIFICATIONS */}
           <div className="border-t border-[#E5DCCF]/60 pt-6 space-y-4" id="profile-section-demo-notifications">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2">
-                  <h3 className="text-[16px] font-bold text-[#1C1814]">Demo Mode</h3>
+                  <h3 className="text-[16px] font-bold text-[#1C1814]">Simulated Testing</h3>
                   <span className="text-[10px] font-semibold uppercase tracking-wider text-[#B45309] bg-amber-100 px-2 py-0.5 rounded-full border border-amber-200">
-                    Local simulation
+                    Simulation
                   </span>
                 </div>
                 <p className="text-[12px] text-[#6E645A] mt-1 leading-relaxed">
-                  Demo notifications are generated locally. Real carrier SMS delivery requires the configured production SMS provider.
+                  Simulated notifications are generated locally for testing. Real carrier SMS delivery requires the configured production SMS provider.
                 </p>
                 <p className="text-[12px] text-[#6E645A] mt-1 leading-relaxed">
-                  Current demo notifications require WeatherGPT to be open. Background push support can be added using a service worker.
+                  Current simulated notifications require WeatherGPT to be open. Background push support can be added using a service worker.
                 </p>
               </div>
               <button
@@ -301,16 +309,16 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({
                 className="shrink-0 px-4 py-2.5 rounded-full bg-amber-100 hover:bg-amber-200 text-[#92400E] border border-amber-300 text-[13px] font-bold transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-95"
                 id="simulate-severe-weather-btn"
               >
-                <span className="material-symbols-outlined text-[18px]">thunderstorm</span>
-                <span>Simulate Severe Weather Alert</span>
+                <span className="material-symbols-outlined text-[18px]">notifications_active</span>
+                <span>Simulate Notification</span>
               </button>
             </div>
 
             <div className="space-y-3" id="demo-sms-inbox">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h3 className="text-[16px] font-bold text-[#1C1814]">Demo SMS Inbox</h3>
-                  <p className="text-[12px] text-[#6E645A]">Simulated SMS — Demo Mode</p>
+                  <h3 className="text-[16px] font-bold text-[#1C1814]">Simulated SMS Inbox</h3>
+                  <p className="text-[12px] text-[#6E645A]">Simulated SMS Messages</p>
                 </div>
                 <span className="text-[11px] text-[#8E9197]">{demoInbox.length} message{demoInbox.length === 1 ? '' : 's'}</span>
               </div>
