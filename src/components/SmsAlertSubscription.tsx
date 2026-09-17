@@ -34,7 +34,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
   activeLocation,
   onOpenLocationModal
 }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneLocalDigits, setPhoneLocalDigits] = useState('');
   const [selectedAlertTypes, setSelectedAlertTypes] = useState<string[]>([
     'heavy_rain',
     'flood',
@@ -61,18 +61,23 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
     return /^\+[1-9]\d{6,14}$/.test(phone.trim());
   };
 
+  const getLocalPhoneDigits = (value: string): string => {
+    const digits = value.replace(/\D/g, '');
+    return digits.startsWith('91') && digits.length > 10 ? digits.slice(2, 12) : digits.slice(0, 10);
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
     setApiError(null);
 
     // 1. Phone number validation
-    const trimmedPhone = phoneNumber.trim();
-    if (!trimmedPhone) {
-      setValidationError('Please enter a mobile number.');
+    const phoneNumber = `+91${phoneLocalDigits}`;
+    if (phoneLocalDigits.length !== 10) {
+      setValidationError('Enter a valid 10-digit Indian mobile number.');
       return;
     }
-    if (!isValidE164(trimmedPhone)) {
+    if (!isValidE164(phoneNumber)) {
       setValidationError(
         'Please enter a valid mobile number in international E.164 format (e.g. +919876543210).'
       );
@@ -99,7 +104,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
 
     try {
       const response = await createSmsSubscription({
-        phoneNumber: trimmedPhone,
+        phoneNumber,
         location: {
           name: activeLocation.name || 'Bengaluru',
           state: activeLocation.state,
@@ -112,8 +117,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
         preferredLanguage
       });
 
-      // Clear the full phone number from component state immediately after success
-      setPhoneNumber('');
+      setPhoneLocalDigits('');
       setSubscribedRecord(response.subscription);
     } catch (err: any) {
       setApiError(err?.message || 'Failed to register SMS subscription. Please try again.');
@@ -126,7 +130,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
     setSubscribedRecord(null);
     setValidationError(null);
     setApiError(null);
-    setPhoneNumber('');
+    setPhoneLocalDigits('');
     setHasConsented(false);
   };
 
@@ -161,7 +165,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
             <div className="flex items-center gap-2.5">
               <span className="material-symbols-outlined text-[#B45309] text-[20px]">smartphone</span>
               <span className="text-[13px] text-[#6E645A]">
-                Phone: <strong className="font-mono text-[14px] text-[#1C1814]">{subscribedRecord.phoneMasked || subscribedRecord.phoneNumber}</strong>
+                Phone: <strong className="font-mono text-[14px] text-[#1C1814]">{subscribedRecord.phoneMasked}</strong>
               </span>
             </div>
             <div className="flex items-center gap-2">
@@ -256,25 +260,29 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
               <label htmlFor="sms-phone-input" className="block text-[13px] font-bold text-[#1C1814]">
                 Mobile number <span className="text-[#EA580C]">*</span>
               </label>
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#6E645A]">
+              <div className="relative flex items-center rounded-2xl bg-white border border-[#E5DCCF] focus-within:ring-2 focus-within:ring-amber-500/30 focus-within:border-amber-500 transition-all shadow-sm">
+                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-[#6E645A] select-none">
                   <span className="material-symbols-outlined text-[18px]">phone</span>
                 </div>
+                <span className="pl-10 pr-2.5 text-[14px] text-[#1C1814] font-mono select-none" aria-hidden="true">
+                  +91
+                </span>
+                <span className="mx-1 text-[11px] text-[#C7BBAA] select-none" aria-hidden="true">•</span>
                 <input
                   id="sms-phone-input"
                   type="tel"
-                  placeholder="+91XXXXXXXXXX"
-                  value={phoneNumber}
+                  inputMode="numeric"
+                  value={phoneLocalDigits}
                   onChange={(e) => {
-                    setPhoneNumber(e.target.value);
+                    setPhoneLocalDigits(getLocalPhoneDigits(e.target.value));
                     if (validationError) setValidationError(null);
                   }}
-                  className="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-white border border-[#E5DCCF] text-[14px] text-[#1C1814] placeholder-[#8E9197] font-mono focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all shadow-sm"
+                  className="min-w-0 flex-1 cursor-text caret-auto pr-4 py-2.5 bg-transparent text-[14px] text-[#1C1814] placeholder-[#8E9197] font-mono focus:outline-none"
                   autoComplete="tel"
                 />
               </div>
               <p className="text-[11px] text-[#6E645A]">
-                Include country code for E.164 format (e.g. <span className="font-mono text-[#1C1814]">+919876543210</span> for India).
+                Enter the 10-digit number after <span className="font-mono text-[#1C1814]">+91</span> (e.g. <span className="font-mono text-[#1C1814]">+91 9876543210</span>).
               </p>
             </div>
 

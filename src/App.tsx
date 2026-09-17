@@ -12,8 +12,8 @@ import { ExploreSection } from './components/ExploreSection';
 import { LocationModal } from './components/LocationModal';
 import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
-import { SmsAlertSubscription } from './components/SmsAlertSubscription';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { ProfilePage } from './pages/ProfilePage';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -211,12 +211,6 @@ export default function App() {
                 onViewAlert={() => setIsAlertModalOpen(true)}
               />
 
-              {/* Section 2.5: Location-Aware SMS Weather Alert Subscription */}
-              <SmsAlertSubscription
-                activeLocation={activeLocation}
-                onOpenLocationModal={() => setIsLocationModalOpen(true)}
-              />
-
               {/* Section 3: Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
               <AIWeatherInput
                 location={activeLocation}
@@ -240,6 +234,12 @@ export default function App() {
               {/* Section 6: Explore & Specialized Weather Sections */}
               <ExploreSection onNavigate={(tab) => setCurrentTab(tab)} />
             </div>
+          ) : currentTab === 'profile' ? (
+            <ProfilePage
+              location={activeLocation}
+              onBackToHome={() => setCurrentTab('home')}
+              onOpenLocationModal={() => setIsLocationModalOpen(true)}
+            />
           ) : (
             <PlaceholderPage
               tab={currentTab}

@@ -192,14 +192,21 @@ export const Navbar: React.FC<NavbarProps> = ({
             )}
           </div>
 
-          {/* User Profile */}
-          <div
-            className="w-8 h-8 rounded-full bg-[#B45309] flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-amber-500/40 hover:scale-105 transition-all text-white shadow-sm"
-            title="Researcher / Commuter Profile (SIH-2024 Demo)"
+          {/* User Profile Navigation Trigger */}
+          <button
+            type="button"
+            onClick={() => onSelectTab('profile')}
+            className={`w-8 h-8 rounded-full flex items-center justify-center cursor-pointer transition-all text-white shadow-sm active:scale-95 ${
+              currentTab === 'profile'
+                ? 'bg-[#D97706] ring-2 ring-amber-500 ring-offset-2 ring-offset-[#FAF8F5]'
+                : 'bg-[#B45309] hover:ring-2 hover:ring-amber-500/40 hover:scale-105'
+            }`}
+            title="Profile & Preferences"
             id="nav-user-profile"
+            aria-label="Open Profile and Preferences"
           >
             <span className="material-symbols-outlined text-[18px]">person</span>
-          </div>
+          </button>
         </div>
       </div>
 

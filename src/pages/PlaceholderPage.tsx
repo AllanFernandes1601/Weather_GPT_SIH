@@ -2,7 +2,6 @@ import React from 'react';
 import { NavTab, LocationData } from '../types';
 import { ACTIVE_ALERT } from '../data/mockWeatherData';
 import { SafetyHub } from '../components/SafetyHub';
-import { SmsAlertSubscription } from '../components/SmsAlertSubscription';
 
 interface PlaceholderPageProps {
   tab: NavTab;
@@ -106,9 +105,6 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                   View Route Precautions &amp; Evacuation Guidelines
                 </button>
               </div>
-
-              {/* Real-time SMS Weather Alert Registration */}
-              <SmsAlertSubscription activeLocation={location} />
             </div>
           )
         };
