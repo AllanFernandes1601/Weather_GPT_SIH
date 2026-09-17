@@ -7,6 +7,10 @@ import { createServer as createViteServer } from 'vite';
 import { WebSocketServer, WebSocket } from 'ws';
 import { GoogleGenAI, Modality } from '@google/genai';
 import { getLanguageOption } from './languageConfig';
+import { smsRouter } from './server/sms/routes';
+import { alertsRouter } from './server/alerts/realtimeAlertHub';
+import { fetchRawOpenMeteoWeather } from './server/sms/weatherTelemetryService';
+import { startSmsAlertScheduler, stopSmsAlertScheduler } from './server/sms/scheduler';
 
 const app = express();
 const PORT = Number(process.env.PORT || 3000);
@@ -112,6 +116,12 @@ app.use((req, res, next) => {
   }
   next();
 });
+
+// Location-aware SMS weather alert subscriptions
+app.use('/api/sms', smsRouter);
+
+// Real-time browser weather alerts (Server-Sent Events)
+app.use('/api/alerts', alertsRouter);
 
 function isWithinBengaluruModelArea(latitude: number, longitude: number): boolean {
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -459,6 +469,12 @@ app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', time: new Date().toISOString() });
 });
 
+// Location-aware SMS weather alert subscriptions
+app.use('/api/sms', smsRouter);
+
+// Real-time browser weather alerts (Server-Sent Events)
+app.use('/api/alerts', alertsRouter);
+
 // Generic structured retrieval endpoint. Numerical records use SQL, not embeddings.
 app.post('/api/rag/retrieve', async (req, res) => {
   if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
@@ -552,35 +568,20 @@ app.get('/api/weather', async (req, res) => {
       return res.json({ ...cached.data, cached: true });
     }
 
-    // Fetch Open-Meteo forecast and air quality concurrently
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,apparent_temperature,relative_humidity_2m,dew_point_2m,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_direction_10m,wind_gusts_10m,surface_pressure,visibility,uv_index,is_day&hourly=temperature_2m,apparent_temperature,precipitation_probability,precipitation,rain,weather_code,cloud_cover,wind_speed_10m,wind_gusts_10m,wind_direction_10m,relative_humidity_2m,surface_pressure,visibility,dew_point_2m,is_day&daily=temperature_2m_max,temperature_2m_min,sunrise,sunset,precipitation_sum,precipitation_probability_max,weather_code&timezone=auto&past_hours=6&forecast_days=2`;
-    const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitude}&longitude=${longitude}&current=pm10,pm2_5,european_aqi,us_aqi`;
+    // Fetch Open-Meteo forecast and air quality concurrently via shared weather service
+    let weatherData: any;
+    let airQualityData: any = null;
 
-    const [weatherRes, airQualityRes] = await Promise.allSettled([
-      fetch(weatherUrl, { headers: { 'User-Agent': 'WeatherGPT-App/1.0' } }),
-      fetch(airQualityUrl, { headers: { 'User-Agent': 'WeatherGPT-App/1.0' } })
-    ]);
-
-    if (weatherRes.status !== 'fulfilled' || !weatherRes.value.ok) {
-      const errorMsg = weatherRes.status === 'fulfilled'
-        ? `Open-Meteo returned status ${weatherRes.value.status}`
-        : (weatherRes.reason?.message || 'Network error connecting to Open-Meteo');
-      console.error('[Open-Meteo Forecast Error]:', errorMsg);
+    try {
+      const raw = await fetchRawOpenMeteoWeather(latitude, longitude);
+      weatherData = raw.weather;
+      airQualityData = raw.airQuality;
+    } catch (fetchErr: any) {
+      console.error('[Open-Meteo Forecast Error]:', fetchErr?.message || fetchErr);
       return res.status(502).json({
         error: 'Failed to fetch meteorological data from Open-Meteo',
-        details: errorMsg
+        details: fetchErr?.message || 'Network error connecting to Open-Meteo'
       });
-    }
-
-    const weatherData = await weatherRes.value.json();
-
-    let airQualityData = null;
-    if (airQualityRes.status === 'fulfilled' && airQualityRes.value.ok) {
-      try {
-        airQualityData = await airQualityRes.value.json();
-      } catch (err) {
-        console.warn('[Open-Meteo Air Quality Parse Warning]:', err);
-      }
     }
 
     let rainPrediction: RainPrediction | null = null;
@@ -1111,9 +1112,29 @@ async function startServer() {
     });
   }
 
-  httpServer.listen(PORT, '0.0.0.0', () => {
-    console.log(`WeatherGPT server active on http://localhost:${PORT}`);
+  const server = httpServer.listen(PORT, '0.0.0.0', () => {
+    console.log(`WeatherGPT server active on http://0.0.0.0:${PORT}`);
+    try {
+      startSmsAlertScheduler();
+    } catch (schedErr) {
+      console.error('[SMS Scheduler Startup Warning]:', schedErr);
+    }
   });
+
+  const handleShutdown = (signal: string) => {
+    console.log(`Received ${signal}. Gracefully stopping SMS scheduler and shutting down...`);
+    try {
+      stopSmsAlertScheduler();
+    } catch (stopErr) {
+      console.error('[SMS Scheduler Shutdown Warning]:', stopErr);
+    }
+    server.close(() => {
+      process.exit(0);
+    });
+  };
+
+  process.on('SIGINT', () => handleShutdown('SIGINT'));
+  process.on('SIGTERM', () => handleShutdown('SIGTERM'));
 }
 
 startServer();
