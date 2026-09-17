@@ -193,7 +193,7 @@ export default function App() {
 
       {/* 2. MAIN VIEW CONTAINER */}
       <main className="w-full pt-24 sm:pt-28 pb-16 bg-[#FAF8F5] flex-1">
-        <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${currentTab === 'profile' ? 'max-w-screen-2xl' : 'max-w-[1360px]'}`}>
           {currentTab === 'home' ? (
             <div className="space-y-10">
               {/* Section 1: Current Weather Hero */}

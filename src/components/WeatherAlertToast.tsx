@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react';
+import { formatAlertType, formatSeverity } from '../utils/alertLabels';
 
 export interface WeatherAlertToastData {
   id: number;
@@ -49,7 +50,12 @@ export const WeatherAlertToast: React.FC<WeatherAlertToastProps> = ({ alert, onD
                   Demo Mode
                 </span>
               </div>
-              <h3 className="mt-1 text-[15px] font-bold text-[#1C1814]">HIGH Heavy Rain Alert</h3>
+              <div className="mt-1 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-bold tracking-wider text-red-700 border border-red-200">
+                  {formatSeverity('high')}
+                </span>
+                <h3 className="text-[15px] font-bold text-[#1C1814]">{formatAlertType('heavy_rain')} Alert</h3>
+              </div>
               <p className="text-[12px] font-semibold text-[#B45309]">{alert.location}</p>
               <p className="mt-2 text-[13px] leading-relaxed text-[#6E645A]">{alert.body}</p>
             </div>

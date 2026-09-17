@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { LocationData } from '../types';
 import { createSmsSubscription, PublicSmsSubscription } from '../services/smsService';
+import { formatAlertType, formatSeverity } from '../utils/alertLabels';
 
 interface SmsAlertSubscriptionProps {
   activeLocation: LocationData;
@@ -15,13 +16,13 @@ interface AlertCategoryOption {
 }
 
 const ALERT_CATEGORIES: AlertCategoryOption[] = [
-  { id: 'heavy_rain', label: 'Heavy Rain', icon: 'rainy', description: 'Intense downpours (>35mm/h) & extreme rain' },
-  { id: 'flood', label: 'Flood Risk', icon: 'flood', description: 'Urban waterlogging & rising river stages' },
-  { id: 'thunderstorm', label: 'Thunderstorm', icon: 'thunderstorm', description: 'Severe convective storms & lightning' },
-  { id: 'strong_wind', label: 'Strong Wind', icon: 'air', description: 'Damaging gusts (>60km/h) & gales' },
-  { id: 'extreme_heat', label: 'Extreme Heat', icon: 'sunny', description: 'Dangerous heatwave conditions (>40°C)' },
-  { id: 'extreme_cold', label: 'Extreme Cold', icon: 'ac_unit', description: 'Severe cold-wave & freezing drops' },
-  { id: 'air_quality', label: 'Air Quality', icon: 'airwave', description: 'Hazardous / severe particulate spikes' }
+  { id: 'heavy_rain', label: formatAlertType('heavy_rain'), icon: 'rainy', description: 'Intense downpours (>35mm/h) and extreme rain' },
+  { id: 'flood', label: formatAlertType('flood'), icon: 'flood', description: 'Urban waterlogging and rising river stages' },
+  { id: 'thunderstorm', label: formatAlertType('thunderstorm'), icon: 'thunderstorm', description: 'Severe convective storms and lightning' },
+  { id: 'strong_wind', label: formatAlertType('strong_wind'), icon: 'air', description: 'Damaging gusts (>60km/h) and gales' },
+  { id: 'extreme_heat', label: formatAlertType('extreme_heat'), icon: 'sunny', description: 'Dangerous heatwave conditions (>40°C)' },
+  { id: 'extreme_cold', label: formatAlertType('extreme_cold'), icon: 'ac_unit', description: 'Severe cold-wave and freezing drops' },
+  { id: 'air_quality', label: formatAlertType('air_quality'), icon: 'airwave', description: 'Hazardous or severe particulate spikes' }
 ];
 
 const LANGUAGE_OPTIONS: { code: 'en' | 'hi' | 'kn'; label: string; nativeName: string }[] = [
@@ -150,7 +151,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
               <span className="material-symbols-outlined text-[28px]">check_circle</span>
             </div>
             <div className="space-y-1 flex-1">
-              <h3 className="text-[20px] font-bold text-[#1C1814]">SMS alerts enabled</h3>
+              <h3 className="text-[20px] font-bold text-[#1C1814]">SMS Alerts Enabled</h3>
               <p className="text-[14px] text-[#6E645A]">
                 You are subscribed for high-priority weather alerts in{' '}
                 <strong className="text-[#1C1814] font-semibold">
@@ -170,10 +171,10 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#B45309] bg-amber-100/80 px-2.5 py-0.5 rounded-full border border-amber-200">
-                Min Severity: {subscribedRecord.minSeverity.toUpperCase()}
+                Minimum Severity: {formatSeverity(subscribedRecord.minSeverity)}
               </span>
               <span className="text-[11px] font-bold uppercase tracking-wider text-[#6E645A] bg-[#E8DEC8] px-2.5 py-0.5 rounded-full">
-                Lang: {subscribedRecord.preferredLanguage.toUpperCase()}
+                Language: {subscribedRecord.preferredLanguage.toUpperCase()}
               </span>
             </div>
           </div>
@@ -186,7 +187,7 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
             <div className="text-[13px] text-[#7C2D12] leading-relaxed">
               <p className="font-semibold text-[13px]">Subscription saved.</p>
               <p className="mt-0.5">
-                Phone verification will be required before live automatic SMS alerts are activated.
+                Phone verification is required before automatic SMS alerts are activated.
               </p>
             </div>
           </div>
@@ -273,6 +274,9 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
                   type="tel"
                   inputMode="numeric"
                   value={phoneLocalDigits}
+                  placeholder="98765 43210"
+                  aria-describedby="sms-phone-help"
+                  aria-invalid={Boolean(validationError)}
                   onChange={(e) => {
                     setPhoneLocalDigits(getLocalPhoneDigits(e.target.value));
                     if (validationError) setValidationError(null);
@@ -281,8 +285,8 @@ export const SmsAlertSubscription: React.FC<SmsAlertSubscriptionProps> = ({
                   autoComplete="tel"
                 />
               </div>
-              <p className="text-[11px] text-[#6E645A]">
-                Enter the 10-digit number after <span className="font-mono text-[#1C1814]">+91</span> (e.g. <span className="font-mono text-[#1C1814]">+91 9876543210</span>).
+              <p id="sms-phone-help" className="text-[11px] text-[#6E645A]">
+                Enter your 10-digit Indian mobile number.
               </p>
             </div>
 
