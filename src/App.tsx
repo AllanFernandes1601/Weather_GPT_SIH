@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
+import React, { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { NavTab, LocationData, HourlyForecastItem, RemoteLocationResult } from './types';
 import { LOCATIONS, ACTIVE_ALERT } from './data/mockWeatherData';
 import { buildFallbackHourlyForecast, weatherService } from './services/weatherService';
@@ -18,9 +18,29 @@ import { ForecastPage } from './pages/ForecastPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
 import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
 import { LanguageId } from '../languageConfig';
+import { ProfilePage } from './pages/ProfilePage';
+import { AlertsPage } from './pages/AlertsPage';
+import { AlertProvider, useAlerts } from './context/AlertContext';
+import { WeatherAlertToast } from './components/WeatherAlertToast';
 
 const DisasterMapPage = lazy(() => import('./pages/DisasterMapPage').then(module => ({ default: module.DisasterMapPage })));
 
+const GlobalAlertToast: React.FC<{ onNavigateToAlerts: (alertId: string | number) => void }> = ({
+  onNavigateToAlerts
+}) => {
+  const { activeToast, dismissToast, selectAlert } = useAlerts();
+
+  return (
+    <WeatherAlertToast
+      alert={activeToast}
+      onDismiss={dismissToast}
+      onSelect={(alertId) => {
+        selectAlert(String(alertId));
+        onNavigateToAlerts(alertId);
+      }}
+    />
+  );
+};
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
@@ -111,6 +131,14 @@ export default function App() {
     document.documentElement.classList.toggle('weather-dark', isDarkMode);
     window.localStorage.setItem('weathergpt-theme', isDarkMode ? 'dark' : 'light');
   }, [isDarkMode]);
+
+  // Periodic 5-minute background telemetry refresh (Part 4)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchWeatherForStation(activeLocation);
+    }, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [fetchWeatherForStation, activeLocation]);
 
   // Global keyboard shortcut for ⌘K / Ctrl+K
   useEffect(() => {
@@ -220,7 +248,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#FAF8F5] text-[#1C1814] flex flex-col justify-between selection:bg-[#B45309] selection:text-white">
+    <AlertProvider>
+      <GlobalAlertToast
+        onNavigateToAlerts={() => {
+          setCurrentTab('alerts');
+        }}
+      />
+      <div className="min-h-screen bg-[#FAF8F5] text-[#1C1814] flex flex-col justify-between selection:bg-[#B45309] selection:text-white">
       {/* 1. TOP APP HEADER NAVBAR */}
       <Navbar
         currentTab={currentTab}
@@ -235,7 +269,7 @@ export default function App() {
 
       {/* 2. MAIN VIEW CONTAINER */}
       <main className="w-full pt-24 sm:pt-28 pb-16 bg-[#FAF8F5] flex-1">
-        <div className="w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className={`w-full mx-auto px-4 sm:px-6 lg:px-8 ${currentTab === 'profile' ? 'max-w-screen-2xl' : 'max-w-[1360px]'}`}>
           {currentTab === 'home' ? (
             <div className="space-y-10">
               {/* Section 1: Current Weather Hero */}
@@ -306,6 +340,19 @@ export default function App() {
                 onBackToHome={() => setCurrentTab('home')}
               />
             </Suspense>
+          ) : currentTab === 'profile' ? (
+            <ProfilePage
+              location={activeLocation}
+              onBackToHome={() => setCurrentTab('home')}
+              onOpenLocationModal={() => setIsLocationModalOpen(true)}
+            />
+          ) : currentTab === 'alerts' ? (
+            <AlertsPage
+              location={activeLocation}
+              onBackToHome={() => setCurrentTab('home')}
+              onOpenLocationModal={() => setIsLocationModalOpen(true)}
+              onRefreshWeather={() => fetchWeatherForStation(activeLocation)}
+            />
           ) : (
             <PlaceholderPage
               tab={currentTab}
@@ -393,5 +440,6 @@ export default function App() {
         </div>
       </footer>
     </div>
+    </AlertProvider>
   );
 }

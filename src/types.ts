@@ -1,4 +1,4 @@
-export type NavTab = 'home' | 'forecast' | 'risks' | 'alerts' | 'weather-map' | 'safety';
+export type NavTab = 'home' | 'forecast' | 'risks' | 'alerts' | 'weather-map' | 'safety' | 'profile';
 
 export type IncidentType =
   | 'flood'
