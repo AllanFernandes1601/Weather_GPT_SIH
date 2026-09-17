@@ -84,7 +84,7 @@ export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
                 <p className="text-[14px] text-[#6E645A]">
                   {ACTIVE_ALERT.description}
                 </p>
-                <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200/70">
+                <div className="dark-alert-corridors p-4 rounded-2xl bg-amber-50 border border-amber-200/70">
                   <h5 className="text-[12px] uppercase font-bold text-[#B45309] tracking-wider mb-2">
                     Critical Commute Corridors
                   </h5>

@@ -14,6 +14,7 @@ import { AlertModal } from './components/AlertModal';
 import { FloatingWeatherAssistant } from './components/FloatingWeatherAssistant';
 import { PlaceholderPage } from './pages/PlaceholderPage';
 import { RisksPage } from './pages/RisksPage';
+import { ForecastPage } from './pages/ForecastPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
 import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
 import { LanguageId } from '../languageConfig';
@@ -279,6 +280,12 @@ export default function App() {
               {/* Section 6: Explore & Specialized Weather Sections */}
               <ExploreSection onNavigate={(tab) => setCurrentTab(tab)} />
             </div>
+          ) : currentTab === 'forecast' ? (
+            <ForecastPage
+              location={activeLocation}
+              hourlyForecast={hourlyForecast}
+              onBackToHome={() => setCurrentTab('home')}
+            />
           ) : currentTab === 'risks' ? (
             <RisksPage
               location={activeLocation}

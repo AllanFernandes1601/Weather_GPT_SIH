@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { RiskCard } from '../components/RiskCard';
 import { RiskWeatherCanvas } from '../components/RiskWeatherCanvas';
+import { RiskSimulationInsights } from '../components/RiskSimulationInsights';
 import { riskService, DistrictFloodContext } from '../services/riskService';
 import { LocationData } from '../types';
 import {
@@ -27,6 +28,14 @@ interface SimulatorValues {
   aqi: number;
   dfsiNormalized: number;
 }
+
+const scenarioPresets: Array<{ id: string; label: string; icon: string; description: string; values: SimulatorValues }> = [
+  { id: 'urban-flood', label: 'Urban Flood', icon: 'flood', description: 'Very heavy rain over a highly susceptible district', values: { rainMm24h: 145, temperatureC: 31, humidityPercent: 92, windGustKmh: 38, aqi: 72, dfsiNormalized: 0.86 } },
+  { id: 'heatwave', label: 'Heat Stress', icon: 'heat', description: 'Extreme temperature with high apparent heat', values: { rainMm24h: 0, temperatureC: 46, humidityPercent: 58, windGustKmh: 18, aqi: 118, dfsiNormalized: 0.42 } },
+  { id: 'cyclonic', label: 'Cyclonic Rain', icon: 'cyclone', description: 'Extreme rainfall and destructive gust conditions', values: { rainMm24h: 220, temperatureC: 28, humidityPercent: 96, windGustKmh: 105, aqi: 38, dfsiNormalized: 0.72 } },
+  { id: 'smog', label: 'Winter Smog', icon: 'foggy', description: 'Low wind and hazardous air-quality conditions', values: { rainMm24h: 0, temperatureC: 19, humidityPercent: 78, windGustKmh: 7, aqi: 285, dfsiNormalized: 0.35 } },
+  { id: 'all-clear', label: 'All Clear', icon: 'verified', description: 'Low-intensity reference conditions', values: { rainMm24h: 2, temperatureC: 29, humidityPercent: 54, windGustKmh: 16, aqi: 36, dfsiNormalized: 0.25 } }
+];
 
 const affectedRisks: Record<keyof SimulatorValues, RiskKind[]> = {
   rainMm24h: ['rain', 'flood'],
@@ -85,6 +94,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
   const [simulator, setSimulator] = useState<SimulatorValues>(() => simulatorFromLive(liveInputs));
   const [debouncedSimulator, setDebouncedSimulator] = useState<SimulatorValues>(() => simulatorFromLive(liveInputs));
   const [pulse, setPulse] = useState<{ field: keyof SimulatorValues; token: number } | null>(null);
+  const [activePreset, setActivePreset] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -157,6 +167,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
     () => calculateRiskFromInputs(mode === 'live' ? liveInputs : simulationInputs),
     [mode, liveInputs, simulationInputs]
   );
+  const liveResult = useMemo(() => calculateRiskFromInputs(liveInputs), [liveInputs]);
   const highest = result.highestAvailableRisk;
 
   return (
@@ -176,7 +187,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
                 </span>
               </div>
               <p className="text-[13px] sm:text-[15px] text-[#6E645A] mt-1 max-w-3xl">
-                Live forecast signals, Bengaluru ML output and district flood susceptibility for {location.name}, {location.state}.
+                Live forecast signals, transparent preparedness rules and district flood susceptibility for {location.name}, {location.state}.
               </p>
             </div>
           </div>
@@ -208,7 +219,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
         </div>
       </section>
 
-      <section className={`rounded-3xl border p-5 sm:p-6 ${alertStyles[highest.level]}`}>
+      <section className={`risk-advisory rounded-3xl border p-5 sm:p-6 ${alertStyles[highest.level]}`}>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
             <span className="material-symbols-outlined text-[26px]">warning</span>
@@ -238,11 +249,33 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
             </div>
             <button
               type="button"
-              onClick={() => setSimulator(simulatorFromLive(liveInputs))}
+              onClick={() => {
+                setSimulator(simulatorFromLive(liveInputs));
+                setActivePreset(null);
+              }}
               className="px-4 py-2 rounded-full text-[12px] font-semibold text-[#B45309] bg-amber-50 hover:bg-amber-100 border border-amber-200"
             >
               Reset to live inputs
             </button>
+          </div>
+          <div className="mb-6 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+            {scenarioPresets.map(preset => (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => {
+                  setSimulator(preset.values);
+                  setActivePreset(preset.id);
+                  setPulse({ field: 'rainMm24h', token: Date.now() });
+                }}
+                title={preset.description}
+                className={`rounded-2xl border p-3 text-left transition-all hover:-translate-y-0.5 hover:shadow-sm ${activePreset === preset.id ? 'border-[#D97706] bg-amber-50 ring-2 ring-amber-500/15' : 'border-[#E5DCCF] bg-[#F8F4EE]'}`}
+              >
+                <span className="material-symbols-outlined text-[21px] text-[#B45309]">{preset.icon}</span>
+                <span className="mt-1 block text-[11px] font-bold text-[#1C1814]">{preset.label}</span>
+                <span className="mt-0.5 block text-[9px] leading-4 text-[#8E7965]">{preset.description}</span>
+              </button>
+            ))}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
             {sliderFields.map(field => {
@@ -269,6 +302,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
                     onInput={event => {
                       const nextValue = Number(event.currentTarget.value);
                       setSimulator(current => ({ ...current, [field.key]: nextValue }));
+                      setActivePreset(null);
                       setPulse({ field: field.key, token: Date.now() });
                     }}
                     className="w-full mt-4 accent-[#D97706]"
@@ -278,6 +312,10 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
             })}
           </div>
         </section>
+      )}
+
+      {mode === 'simulation' && (
+        <RiskSimulationInsights baseline={liveResult} simulation={result} />
       )}
 
       <RiskWeatherCanvas inputs={mode === 'live' ? liveInputs : instantSimulationInputs} />
@@ -321,7 +359,7 @@ export const RisksPage: React.FC<RisksPageProps> = ({ location, onBackToHome }) 
             <h3 className="text-[20px] font-bold mt-1">Prediction, rules and evidence stay separate.</h3>
           </div>
           <p className="text-[12px] leading-relaxed text-stone-300">
-            Bengaluru rain may show an ML probability. Other rain, heat, wind and AQI results use transparent forecast rules. Flood is a susceptibility estimate using dataset-relative DFSI.
+            Rain, heat, wind and AQI use transparent forecast rules. Experimental rain ML is hidden until calibrated. Flood is a susceptibility estimate using dataset-relative DFSI.
           </p>
           <p className="text-[12px] leading-relaxed text-stone-300">
             Gemini is not required for these calculations. It can explain the result when quota is available, but the engine and reasons remain functional without it.

@@ -537,14 +537,21 @@ export function normalizeOpenMeteoResponse(
   // Build Hourly Forecast Items starting from the current hourly index
   const hourlyItems: HourlyForecastItem[] = [];
   const temps: number[] = hourly.temperature_2m || [];
+  const apparentTemps: number[] = hourly.apparent_temperature || [];
   const pops: number[] = hourly.precipitation_probability || [];
+  const precipitationValues: number[] = hourly.precipitation || [];
+  const humidityValues: number[] = hourly.relative_humidity_2m || [];
+  const windValues: number[] = hourly.wind_speed_10m || [];
+  const gustValues: number[] = hourly.wind_gusts_10m || [];
+  const pressureValues: number[] = hourly.surface_pressure || [];
+  const visibilityValues: number[] = hourly.visibility || [];
   const codes: number[] = hourly.weather_code || [];
   const hourlyIsDays: number[] = hourly.is_day || [];
 
   const startIdx = currentHourlyIndex;
   // Keep enough live hours for questions about the rest of today and tomorrow.
   // The dashboard component limits how many cards it displays.
-  const itemsCount = Math.min(48, Math.max(0, hourlyTimes.length - startIdx));
+  const itemsCount = Math.min(168, Math.max(0, hourlyTimes.length - startIdx));
 
   for (let i = 0; i < itemsCount; i++) {
     const idx = startIdx + i;
@@ -575,8 +582,15 @@ export function normalizeOpenMeteoResponse(
       time: timeLabel,
       forecastTime: timeIso,
       temperature: Math.round(temps[idx] ?? temperature),
+      apparentTemperature: Math.round(apparentTemps[idx] ?? temps[idx] ?? temperature),
       condition: itemInfo.condition,
       rainProbability: rainProb,
+      precipitationMm: Number((precipitationValues[idx] ?? 0).toFixed(1)),
+      humidityPercent: Math.round(humidityValues[idx] ?? humidity),
+      windSpeedKmh: Math.round(windValues[idx] ?? windSpeed),
+      windGustsKmh: Math.round(gustValues[idx] ?? windGusts),
+      pressureHpa: Math.round(pressureValues[idx] ?? pressure),
+      visibilityKm: Math.round((visibilityValues[idx] ?? visibilityMeters) / 1000),
       icon: itemInfo.icon,
       isNow: i === 0,
       isWarning: rainProb >= 50 && rainProb < 75,

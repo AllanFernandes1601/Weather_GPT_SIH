@@ -77,14 +77,14 @@ function mixColor(from: number[], to: number[], amount: number): string {
   return `rgb(${mixed[0]}, ${mixed[1]}, ${mixed[2]})`;
 }
 
-function skyColors(heatRisk: number): [string, string] {
+function skyColors(heatRisk: number, darkMode: boolean): [string, string] {
   const normalized = clamp(heatRisk, 0, 1);
-  const coolTop = [207, 224, 235];
-  const coolBottom = [241, 247, 250];
-  const amberTop = [244, 201, 126];
-  const amberBottom = [255, 238, 196];
-  const severeTop = [174, 58, 37];
-  const severeBottom = [235, 103, 61];
+  const coolTop = darkMode ? [17, 32, 44] : [207, 224, 235];
+  const coolBottom = darkMode ? [22, 43, 55] : [241, 247, 250];
+  const amberTop = darkMode ? [95, 64, 24] : [244, 201, 126];
+  const amberBottom = darkMode ? [128, 78, 27] : [255, 238, 196];
+  const severeTop = darkMode ? [102, 31, 28] : [174, 58, 37];
+  const severeBottom = darkMode ? [153, 52, 35] : [235, 103, 61];
 
   if (normalized <= 0.5) {
     const amount = normalized * 2;
@@ -217,7 +217,8 @@ export const RiskWeatherCanvas: React.FC<RiskWeatherCanvasProps> = ({ inputs }) 
       const waterLine = state.height - waterHeight;
 
       // Sky layer (back).
-      const [skyTop, skyBottom] = skyColors(state.heatCurrent);
+      const darkMode = document.documentElement.classList.contains('weather-dark');
+      const [skyTop, skyBottom] = skyColors(state.heatCurrent, darkMode);
       const skyGradient = context.createLinearGradient(0, 0, 0, state.height);
       skyGradient.addColorStop(0, skyTop);
       skyGradient.addColorStop(1, skyBottom);
@@ -251,7 +252,7 @@ export const RiskWeatherCanvas: React.FC<RiskWeatherCanvasProps> = ({ inputs }) 
         const horizontalRainSpeed = galeStrength * (80 + state.windKmhCurrent * 1.7);
         const rainTilt = galeStrength * 13;
         context.beginPath();
-        context.strokeStyle = 'rgba(37, 99, 235, 0.48)';
+        context.strokeStyle = darkMode ? 'rgba(125, 211, 252, 0.72)' : 'rgba(37, 99, 235, 0.48)';
         context.lineWidth = 1.35;
         for (const particle of state.particles) {
           particle.y += fallSpeed * particle.speedScale * deltaSeconds;
@@ -269,7 +270,7 @@ export const RiskWeatherCanvas: React.FC<RiskWeatherCanvasProps> = ({ inputs }) 
       if (desiredWindParticleCount > 0) {
         const windSpeed = 34 + state.windKmhCurrent * 2.8;
         context.beginPath();
-        context.strokeStyle = 'rgba(55, 65, 81, 0.34)';
+        context.strokeStyle = darkMode ? 'rgba(226, 232, 240, 0.42)' : 'rgba(55, 65, 81, 0.34)';
         context.lineWidth = 1.5;
         context.lineCap = 'round';
         for (const particle of state.windParticles) {

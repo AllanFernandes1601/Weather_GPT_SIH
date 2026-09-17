@@ -160,10 +160,41 @@ export interface GovernmentAssistanceScheme {
 
 export interface RainPrediction {
   probability: number;
+  probabilityPercent: number;
+  confidence: number;
+  confidencePercent: number;
   willRain: boolean;
   threshold: number;
   observedAt: string;
   modelScope: 'Bengaluru';
+  modelVersion: string;
+  target: string;
+  validationMetrics: {
+    precision?: number;
+    recall?: number;
+    f1?: number;
+    roc_auc?: number;
+    brier_score?: number;
+  };
+  hourly: RainPredictionHour[];
+}
+
+export interface RainPredictionHour {
+  observedAt: string;
+  forecastTime: string;
+  probability: number;
+  probabilityPercent: number;
+  confidence: number;
+  confidencePercent: number;
+  willRain: boolean;
+  factors: {
+    temperatureC: number;
+    humidityPercent: number;
+    cloudCoverPercent: number;
+    windSpeedKmh: number;
+    pressureHpa: number;
+    recentRainMm: number;
+  };
 }
 
 export interface LocationData {
@@ -221,8 +252,15 @@ export interface HourlyForecastItem {
   time: string;
   forecastTime?: string;
   temperature: number;
+  apparentTemperature?: number;
   condition: string;
   rainProbability: number;
+  precipitationMm?: number;
+  humidityPercent?: number;
+  windSpeedKmh?: number;
+  windGustsKmh?: number;
+  pressureHpa?: number;
+  visibilityKm?: number;
   icon: string;
   isNow?: boolean;
   isWarning?: boolean;

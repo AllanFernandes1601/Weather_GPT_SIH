@@ -318,9 +318,68 @@ html.weather-dark [class*="bg-[#F8F4EE]"],
 html.weather-dark [class*="bg-[#F4F8FA]"],
 html.weather-dark [class*="bg-[#E7F1F3]"],
 html.weather-dark [class*="bg-[#EFE7DB]"],
+html.weather-dark [class*="bg-[#F2EBE1]"],
+html.weather-dark [class*="bg-[#F7F1E8]"],
+html.weather-dark [class*="bg-[#E2D8CB]"],
+html.weather-dark [class*="bg-[#E2D5BE]"],
+html.weather-dark [class*="bg-[#E5DCCF]"],
+html.weather-dark [class*="bg-[#E8DEC8]"],
 html.weather-dark [class~="bg-white"],
 html.weather-dark [class*="bg-white/"] {
   background-color: #121a22 !important;
+}
+
+/* Tailwind's pale semantic surfaces need dark equivalents as well. Exact
+   class-token matching avoids activating hover-only utilities prematurely. */
+html.weather-dark [class~="bg-blue-50"],
+html.weather-dark [class~="bg-blue-50/75"],
+html.weather-dark [class~="bg-blue-50/90"],
+html.weather-dark [class~="bg-blue-100"],
+html.weather-dark [class~="bg-blue-100/40"] {
+  background-color: rgba(30, 64, 175, 0.22) !important;
+}
+
+html.weather-dark [class~="bg-emerald-50"],
+html.weather-dark [class~="bg-emerald-50/70"],
+html.weather-dark [class~="bg-emerald-100"] {
+  background-color: rgba(5, 150, 105, 0.18) !important;
+}
+
+html.weather-dark [class~="bg-amber-50"],
+html.weather-dark [class~="bg-amber-50/70"],
+html.weather-dark [class~="bg-amber-50/80"],
+html.weather-dark [class~="bg-amber-50/90"],
+html.weather-dark [class~="bg-amber-100"],
+html.weather-dark [class~="bg-amber-100/70"],
+html.weather-dark [class~="bg-amber-100/80"],
+html.weather-dark [class~="bg-amber-200"],
+html.weather-dark [class~="bg-amber-200/30"],
+html.weather-dark [class~="bg-amber-200/60"] {
+  background-color: rgba(180, 83, 9, 0.20) !important;
+}
+
+html.weather-dark [class~="bg-orange-50"],
+html.weather-dark [class~="bg-orange-100/40"] {
+  background-color: rgba(194, 65, 12, 0.20) !important;
+}
+
+html.weather-dark [class~="bg-red-50"],
+html.weather-dark [class~="bg-rose-50"],
+html.weather-dark [class~="bg-rose-100"] {
+  background-color: rgba(190, 24, 93, 0.18) !important;
+}
+
+html.weather-dark [class~="bg-stone-100"],
+html.weather-dark [class~="bg-slate-50"] {
+  background-color: rgba(100, 116, 139, 0.18) !important;
+}
+
+html.weather-dark [class~="bg-cyan-50"] {
+  background-color: rgba(8, 145, 178, 0.18) !important;
+}
+
+html.weather-dark [class~="bg-violet-50"] {
+  background-color: rgba(109, 40, 217, 0.18) !important;
 }
 
 html.weather-dark [class*="from-[#FFFDF9]"],
@@ -328,6 +387,11 @@ html.weather-dark [class*="from-[#FFF9EE]"],
 html.weather-dark [class*="from-[#FAF8F5]"],
 html.weather-dark [class*="from-[#FCF9F3]"] {
   background-image: linear-gradient(135deg, #151e27, #101820) !important;
+}
+
+html.weather-dark [class~="from-amber-50"],
+html.weather-dark [class~="from-emerald-50"] {
+  background-image: linear-gradient(135deg, #17212a, #111922) !important;
 }
 
 html.weather-dark [class*="text-[#1C1814]"],
@@ -343,12 +407,69 @@ html.weather-dark [class*="text-[#8E7965]"] {
   color: #b8c1ca !important;
 }
 
+html.weather-dark [class*="text-[#4F463E]"],
+html.weather-dark [class*="text-[#5F554B]"],
+html.weather-dark [class*="text-[#7C6F63]"],
+html.weather-dark [class*="text-[#8C827A]"],
+html.weather-dark [class*="text-[#9A8C7E]"],
+html.weather-dark [class*="text-[#A3998E]"],
+html.weather-dark [class*="text-[#52606D]"] {
+  color: #c4cdd6 !important;
+}
+
+html.weather-dark [class*="text-[#7C2D12]"],
+html.weather-dark [class*="text-[#78350F]"] {
+  color: #fdba74 !important;
+}
+
+html.weather-dark [class~="text-emerald-700"],
+html.weather-dark [class~="text-emerald-800"],
+html.weather-dark [class~="text-emerald-900"],
+html.weather-dark [class~="text-emerald-950"] { color: #6ee7b7 !important; }
+
+html.weather-dark [class~="text-blue-700"],
+html.weather-dark [class~="text-blue-800"],
+html.weather-dark [class~="text-blue-900"],
+html.weather-dark [class~="text-blue-950"] { color: #93c5fd !important; }
+
+html.weather-dark [class~="text-amber-900"],
+html.weather-dark [class~="text-amber-950"] { color: #fcd34d !important; }
+
+html.weather-dark [class~="text-orange-800"],
+html.weather-dark [class~="text-orange-950"] { color: #fdba74 !important; }
+
+html.weather-dark [class~="text-red-800"],
+html.weather-dark [class~="text-red-950"],
+html.weather-dark [class~="text-rose-800"],
+html.weather-dark [class~="text-rose-900"] { color: #fda4af !important; }
+
+html.weather-dark [class~="text-stone-700"],
+html.weather-dark [class~="text-stone-800"] { color: #d6d3d1 !important; }
+
+html.weather-dark [class~="text-cyan-900"] { color: #a5f3fc !important; }
+html.weather-dark [class~="text-violet-900"] { color: #ddd6fe !important; }
+
 html.weather-dark [class*="border-[#E5DCCF]"],
 html.weather-dark [class*="border-[#E8DED2]"],
 html.weather-dark [class*="border-[#E2D4C3]"],
 html.weather-dark [class*="border-[#DCCFBE]"] {
   border-color: rgba(148, 163, 184, 0.24) !important;
 }
+
+html.weather-dark [class*="border-[#E9DDCC]"] {
+  border-color: rgba(148, 163, 184, 0.24) !important;
+}
+
+html.weather-dark [class~="border-amber-200"],
+html.weather-dark [class~="border-amber-200/70"],
+html.weather-dark [class~="border-orange-200"] { border-color: rgba(251, 191, 36, 0.34) !important; }
+
+html.weather-dark [class~="border-emerald-200"] { border-color: rgba(52, 211, 153, 0.32) !important; }
+html.weather-dark [class~="border-blue-200"] { border-color: rgba(96, 165, 250, 0.32) !important; }
+html.weather-dark [class~="border-red-200"],
+html.weather-dark [class~="border-rose-200"] { border-color: rgba(251, 113, 133, 0.32) !important; }
+html.weather-dark [class~="border-stone-200"],
+html.weather-dark [class~="border-slate-200"] { border-color: rgba(148, 163, 184, 0.28) !important; }
 
 html.weather-dark input,
 html.weather-dark select,
@@ -366,6 +487,35 @@ html.weather-dark .floating-assistant-panel header {
   background: #101820 !important;
   background-image: none !important;
   color: #f6f1eb !important;
+}
+
+html.weather-dark .weather-rain-chip {
+  background: rgba(30, 64, 175, 0.22) !important;
+  border-color: rgba(96, 165, 250, 0.34) !important;
+  color: #dbeafe !important;
+}
+
+html.weather-dark .risk-advisory,
+html.weather-dark .dark-alert-corridors {
+  background: linear-gradient(135deg, rgba(120, 53, 15, 0.30), rgba(67, 38, 18, 0.20)) !important;
+  border-color: rgba(251, 146, 60, 0.34) !important;
+  color: #ffedd5 !important;
+}
+
+html.weather-dark .risk-card-action,
+html.weather-dark .risk-card-contributions {
+  background: #18232d !important;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+html.weather-dark .risk-card-reason,
+html.weather-dark .risk-card-estimate,
+html.weather-dark .risk-card-contributions {
+  color: #c4cdd6 !important;
+}
+
+html.weather-dark .risk-card-action p:last-child {
+  color: #edf2f7 !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

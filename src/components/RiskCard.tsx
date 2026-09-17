@@ -73,14 +73,14 @@ export const RiskCard: React.FC<RiskCardProps> = ({
           isHighlighted={isHighest}
         />
         {assessment.estimateNote && (
-          <p className="text-[10px] italic text-[#7C6F63] text-center mt-1">
+          <p className="risk-card-estimate text-[10px] italic text-[#7C6F63] text-center mt-1">
             {assessment.estimateNote}
           </p>
         )}
       </div>
 
       {contributions && (
-        <div className="mt-4 space-y-3 rounded-xl bg-[#F7F1E8] p-3" aria-label="Flood risk contribution breakdown">
+        <div className="risk-card-contributions mt-4 space-y-3 rounded-xl bg-[#F7F1E8] p-3" aria-label="Flood risk contribution breakdown">
           {contributions.map(contribution => (
             <div key={contribution.label}>
               <div className="flex justify-between gap-2 text-[10px] font-semibold text-[#5F554B]">
@@ -98,9 +98,9 @@ export const RiskCard: React.FC<RiskCardProps> = ({
         </div>
       )}
 
-      <p className="text-[12px] leading-relaxed text-[#4F463E] mt-4 flex-1">{assessment.reason}</p>
+      <p className="risk-card-reason text-[12px] leading-relaxed text-[#4F463E] mt-4 flex-1">{assessment.reason}</p>
 
-      <div className="mt-4 rounded-xl bg-[#F7F1E8] p-3">
+      <div className="risk-card-action mt-4 rounded-xl bg-[#F7F1E8] p-3">
         <p className="text-[9px] uppercase font-bold tracking-wider text-[#8E7965]">Recommended action</p>
         <p className="text-[11px] text-[#1C1814] font-medium leading-relaxed mt-1">{assessment.precautions[0]}</p>
       </div>
