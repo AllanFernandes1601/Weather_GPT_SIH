@@ -8,6 +8,8 @@ interface NavbarProps {
   onOpenLocationModal: () => void;
   onOpenSearchModal: () => void;
   onOpenAlertModal: () => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,7 +18,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeLocation,
   onOpenLocationModal,
   onOpenSearchModal,
-  onOpenAlertModal
+  onOpenAlertModal,
+  isDarkMode,
+  onToggleDarkMode
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
 
@@ -152,6 +156,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
+          <button
+            type="button"
+            onClick={onToggleDarkMode}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F5F0E8] text-[#6E645A] shadow-sm border border-[#E5DCCF]/60 transition-all hover:bg-[#E8DEC8] hover:text-[#1C1814] active:scale-95"
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={isDarkMode}
+          >
+            <span className="material-symbols-outlined text-[19px]">
+              {isDarkMode ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
+
           {/* Notifications Trigger */}
           <div className="relative">
             <button
@@ -196,9 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
                 <div className="mt-3 text-center">
-                  <span className="text-[11px] text-[#8E9197]">
-                    Demo weather notification feed
-                  </span>
+                  <span className="text-[11px] text-[#8E9197]">Demo weather notification feed</span>
                 </div>
               </div>
             )}

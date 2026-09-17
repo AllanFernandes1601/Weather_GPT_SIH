@@ -22,6 +22,7 @@ interface AIWeatherInputProps {
   playbackState?: VoicePlaybackState;
   selectedLanguage: LanguageId;
   onLanguageChange: (language: LanguageId) => void;
+  compact?: boolean;
 }
 
 export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
@@ -39,7 +40,8 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   liveTranscript,
   playbackState = 'idle',
   selectedLanguage,
-  onLanguageChange
+  onLanguageChange,
+  compact = false
 }) => {
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -77,6 +79,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   return (
     <section
       id="ask-weathergpt-container"
+      data-compact={compact ? 'true' : 'false'}
       className="relative rounded-3xl sm:rounded-4xl bg-gradient-to-b from-[#FFFDF9] via-[#FCF9F3] to-[#F7EFE1] p-6 sm:p-10 lg:p-12 shadow-[0_8px_40px_rgba(46,40,35,0.08)] border-2 border-[#B45309]/30 overflow-hidden transition-all duration-300 hover:shadow-[0_16px_50px_rgba(217,119,6,0.12)] hover:border-[#B45309]/50"
     >
       {/* Subtle atmospheric glow backdrop */}
@@ -84,7 +87,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
       <div className="absolute -left-20 -bottom-20 w-96 h-96 bg-blue-100/40 rounded-full blur-3xl pointer-events-none" />
 
       {/* Header bar with Neural badge and Doppler audio link status */}
-      <div className="flex items-center justify-between pb-6 mb-2 border-b border-[#E5DCCF]/60 flex-wrap gap-4">
+      <div className="ai-weather-header flex items-center justify-between pb-6 mb-2 border-b border-[#E5DCCF]/60 flex-wrap gap-4">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 to-[#B45309] flex items-center justify-center shadow-lg shadow-amber-500/25 text-white">
             <span className="material-symbols-outlined text-[28px] animate-pulse">
@@ -100,7 +103,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
                 Neural V4.2
               </span>
             </div>
-            <p className="text-[14px] sm:text-[16px] text-[#6E645A] mt-0.5">
+            <p className="ai-weather-description text-[14px] sm:text-[16px] text-[#6E645A] mt-0.5">
               India's conversational meteorological AI assistant. Hyper-local forecasts, commute safety, and disaster advisories in{' '}
               <span className="font-semibold text-[#1C1814]">English</span>,{' '}
               <span className="font-semibold text-[#1C1814]">हिंदी</span>, and{' '}
@@ -448,7 +451,7 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
       </div>
 
       {/* Suggested Prompt Chips */}
-      <div className="space-y-3 pt-2">
+      <div className="ai-weather-suggestions space-y-3 pt-2">
         <div className="flex items-center justify-between flex-wrap gap-2">
           <span className="text-[11px] uppercase tracking-wider text-[#6E645A] font-bold flex items-center gap-1.5">
             <span className="material-symbols-outlined text-[16px] text-[#B45309]">

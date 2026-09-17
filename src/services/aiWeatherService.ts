@@ -1,5 +1,6 @@
 import { HourlyForecastItem, LocationData } from '../types';
 import { LanguageId } from '../../languageConfig';
+import { requestJson } from './apiClient';
 
 export interface AIResponse {
   query: string;
@@ -60,7 +61,7 @@ export const aiWeatherService = {
     language: LanguageId = 'auto'
   ): Promise<AIResponse> {
     const liveWeather = buildWeatherGPTLiveWeather(location);
-    const response = await fetch('/api/ai/weather', {
+    return await requestJson<AIResponse>('/api/ai/weather', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -77,10 +78,5 @@ export const aiWeatherService = {
         }))
       })
     });
-    const payload = await response.json();
-    if (!response.ok) {
-      throw new Error(payload.error || 'WeatherGPT is temporarily unavailable');
-    }
-    return payload as AIResponse;
   }
 };

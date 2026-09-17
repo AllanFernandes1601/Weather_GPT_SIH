@@ -1,10 +1,9 @@
-import { useState, useEffect, useCallback } from 'react';
+import { lazy, Suspense, useState, useEffect, useCallback } from 'react';
 import { NavTab, LocationData, HourlyForecastItem, RemoteLocationResult } from './types';
-import { LOCATIONS, HOURLY_FORECAST_DATA, ACTIVE_ALERT } from './data/mockWeatherData';
-import { weatherService } from './services/weatherService';
+import { LOCATIONS, ACTIVE_ALERT } from './data/mockWeatherData';
+import { buildFallbackHourlyForecast, weatherService } from './services/weatherService';
 import { Navbar } from './components/Navbar';
 import { WeatherHero } from './components/WeatherHero';
-import { AlertCard } from './components/AlertCard';
 import { AIWeatherInput } from './components/AIWeatherInput';
 import { HourlyForecast } from './components/HourlyForecast';
 import { WeatherDetails } from './components/WeatherDetails';
@@ -12,16 +11,24 @@ import { ExploreSection } from './components/ExploreSection';
 import { LocationModal } from './components/LocationModal';
 import { SearchModal } from './components/SearchModal';
 import { AlertModal } from './components/AlertModal';
+import { FloatingWeatherAssistant } from './components/FloatingWeatherAssistant';
 import { PlaceholderPage } from './pages/PlaceholderPage';
+import { RisksPage } from './pages/RisksPage';
 import { useVoiceCapture } from './hooks/useVoiceCapture';
 import { buildWeatherGPTLiveWeather } from './services/aiWeatherService';
 import { LanguageId } from '../languageConfig';
-import { RisksPage } from './pages/RisksPage';
+
+const DisasterMapPage = lazy(() => import('./pages/DisasterMapPage').then(module => ({ default: module.DisasterMapPage })));
+
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavTab>('home');
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const saved = window.localStorage.getItem('weathergpt-theme');
+    return saved ? saved === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
   const [activeLocation, setActiveLocation] = useState<LocationData>(LOCATIONS[0]);
-  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>(HOURLY_FORECAST_DATA);
+  const [hourlyForecast, setHourlyForecast] = useState<HourlyForecastItem[]>(() => buildFallbackHourlyForecast());
   const [isLoadingWeather, setIsLoadingWeather] = useState(false);
   const [, setWeatherError] = useState<string | null>(null);
   const [selectedLanguage, setSelectedLanguage] = useState<LanguageId>('auto');
@@ -98,6 +105,11 @@ export default function App() {
   useEffect(() => {
     fetchWeatherForStation(LOCATIONS[0]);
   }, [fetchWeatherForStation]);
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('weather-dark', isDarkMode);
+    window.localStorage.setItem('weathergpt-theme', isDarkMode ? 'dark' : 'light');
+  }, [isDarkMode]);
 
   // Global keyboard shortcut for ⌘K / Ctrl+K
   useEffect(() => {
@@ -216,6 +228,8 @@ export default function App() {
         onOpenLocationModal={() => setIsLocationModalOpen(true)}
         onOpenSearchModal={() => setIsSearchModalOpen(true)}
         onOpenAlertModal={() => setIsAlertModalOpen(true)}
+        isDarkMode={isDarkMode}
+        onToggleDarkMode={() => setIsDarkMode(value => !value)}
       />
 
       {/* 2. MAIN VIEW CONTAINER */}
@@ -232,30 +246,26 @@ export default function App() {
                 isLoading={isLoadingWeather}
               />
 
-              {/* Section 2: Severe Weather Alert Banner */}
-              <AlertCard
-                alert={ACTIVE_ALERT}
-                onViewAlert={() => setIsAlertModalOpen(true)}
-              />
-
-              {/* Section 3: Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
-              <AIWeatherInput
-                location={activeLocation}
-                hourlyForecast={hourlyForecast}
-                locationName={activeLocation.name}
-                latitude={activeLocation.latitude}
-                longitude={activeLocation.longitude}
-                isVoiceActive={isVoiceActive}
-                onToggleVoice={toggleVoiceCapture}
-                voiceError={voiceError}
-                onClearVoiceError={clearVoiceError}
-                diagnostics={diagnostics}
-                liveState={liveState}
-                liveTranscript={liveTranscript}
-                playbackState={playbackState}
-                selectedLanguage={selectedLanguage}
-                onLanguageChange={setSelectedLanguage}
-              />
+              {/* Ask WeatherGPT AI Hub with Voice-to-Cloud Integration */}
+              <div id="ask-weathergpt" className="scroll-mt-28">
+                <AIWeatherInput
+                  location={activeLocation}
+                  hourlyForecast={hourlyForecast}
+                  locationName={activeLocation.name}
+                  latitude={activeLocation.latitude}
+                  longitude={activeLocation.longitude}
+                  isVoiceActive={isVoiceActive}
+                  onToggleVoice={toggleVoiceCapture}
+                  voiceError={voiceError}
+                  onClearVoiceError={clearVoiceError}
+                  diagnostics={diagnostics}
+                  liveState={liveState}
+                  liveTranscript={liveTranscript}
+                  playbackState={playbackState}
+                  selectedLanguage={selectedLanguage}
+                  onLanguageChange={setSelectedLanguage}
+                />
+              </div>
 
               {/* Section 4: Today's Hourly Forecast */}
               <HourlyForecast
@@ -274,6 +284,21 @@ export default function App() {
               location={activeLocation}
               onBackToHome={() => setCurrentTab('home')}
             />
+          ) : currentTab === 'weather-map' ? (
+            <Suspense fallback={(
+              <div className="flex min-h-[520px] items-center justify-center rounded-3xl border border-[#E5DCCF] bg-[#FFFDF9]">
+                <div className="text-center text-[#6E645A]">
+                  <span className="material-symbols-outlined animate-spin text-[36px] text-cyan-600">progress_activity</span>
+                  <p className="mt-2 text-[13px] font-semibold">Loading disaster map…</p>
+                </div>
+              </div>
+            )}>
+              <DisasterMapPage
+                location={activeLocation}
+                hourlyForecast={hourlyForecast}
+                onBackToHome={() => setCurrentTab('home')}
+              />
+            </Suspense>
           ) : (
             <PlaceholderPage
               tab={currentTab}
@@ -284,6 +309,31 @@ export default function App() {
           )}
         </div>
       </main>
+
+      <FloatingWeatherAssistant
+        location={activeLocation}
+        currentTab={currentTab}
+        isLoading={isLoadingWeather}
+      >
+        <AIWeatherInput
+          location={activeLocation}
+          hourlyForecast={hourlyForecast}
+          locationName={activeLocation.name}
+          latitude={activeLocation.latitude}
+          longitude={activeLocation.longitude}
+          isVoiceActive={isVoiceActive}
+          onToggleVoice={toggleVoiceCapture}
+          voiceError={voiceError}
+          onClearVoiceError={clearVoiceError}
+          diagnostics={diagnostics}
+          liveState={liveState}
+          liveTranscript={liveTranscript}
+          playbackState={playbackState}
+          selectedLanguage={selectedLanguage}
+          onLanguageChange={setSelectedLanguage}
+          compact
+        />
+      </FloatingWeatherAssistant>
 
       {/* 3. MODALS */}
       <LocationModal
