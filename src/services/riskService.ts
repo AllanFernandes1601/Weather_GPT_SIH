@@ -1,5 +1,6 @@
 import { LocationData } from '../types';
 import { normalizeDfsi, RiskInputs } from '../utils/riskEngine';
+import { requestJson } from './apiClient';
 
 export interface DistrictFloodContext {
   district: string;
@@ -24,13 +25,11 @@ interface RagResponse {
 
 async function retrieve(payload: Record<string, unknown>): Promise<RagResponse | null> {
   try {
-    const response = await fetch('/api/rag/retrieve', {
+    return await requestJson<RagResponse>('/api/rag/retrieve', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!response.ok) return null;
-    return await response.json();
   } catch {
     return null;
   }

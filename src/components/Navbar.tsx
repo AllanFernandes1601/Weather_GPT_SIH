@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { NavTab, LocationData } from '../types';
+import { disableWeatherNotifications, enableWeatherNotifications } from '../services/notificationService';
 
 interface NavbarProps {
   currentTab: NavTab;
@@ -8,6 +9,8 @@ interface NavbarProps {
   onOpenLocationModal: () => void;
   onOpenSearchModal: () => void;
   onOpenAlertModal: () => void;
+  isDarkMode: boolean;
+  onToggleDarkMode: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -16,9 +19,33 @@ export const Navbar: React.FC<NavbarProps> = ({
   activeLocation,
   onOpenLocationModal,
   onOpenSearchModal,
-  onOpenAlertModal
+  onOpenAlertModal,
+  isDarkMode,
+  onToggleDarkMode
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
+  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
+
+  const handleNotificationToggle = async () => {
+    setNotificationMessage(null);
+    if (notificationsEnabled) {
+      await disableWeatherNotifications();
+      setNotificationsEnabled(false);
+      return;
+    }
+
+    try {
+      const enabled = await enableWeatherNotifications();
+      setNotificationsEnabled(enabled);
+      setNotificationMessage(enabled
+        ? 'Weather alerts enabled on this device.'
+        : 'Native weather notifications are available in the Android app.');
+    } catch (error) {
+      console.error('[Notification Permission Error]:', error);
+      setNotificationMessage('Notification permission could not be enabled.');
+    }
+  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-xl border-b border-[#E5DCCF]/60 shadow-[0_1px_12px_rgba(46,40,35,0.04)] transition-all">
@@ -152,6 +179,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             </span>
           </button>
 
+          <button
+            type="button"
+            onClick={onToggleDarkMode}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F5F0E8] text-[#6E645A] shadow-sm border border-[#E5DCCF]/60 transition-all hover:bg-[#E8DEC8] hover:text-[#1C1814] active:scale-95"
+            title={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-pressed={isDarkMode}
+          >
+            <span className="material-symbols-outlined text-[19px]">
+              {isDarkMode ? 'light_mode' : 'dark_mode'}
+            </span>
+          </button>
+
           {/* Notifications Trigger */}
           <div className="relative">
             <button
@@ -196,9 +236,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
                 <div className="mt-3 text-center">
-                  <span className="text-[11px] text-[#8E9197]">
-                    Demo weather notification feed
-                  </span>
+                  <button
+                    type="button"
+                    onClick={handleNotificationToggle}
+                    className="text-[11px] font-bold text-[#B45309] hover:underline"
+                  >
+                    {notificationsEnabled ? 'Disable weather notifications' : 'Enable weather notifications'}
+                  </button>
+                  {notificationMessage && (
+                    <p className="mt-1 text-[11px] text-[#6E645A]">{notificationMessage}</p>
+                  )}
                 </div>
               </div>
             )}

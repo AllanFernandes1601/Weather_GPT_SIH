@@ -20,8 +20,10 @@ interface CacheEntry<T> {
 const weatherCache = new Map<string, CacheEntry<any>>();
 const geocodeCache = new Map<string, CacheEntry<any>>();
 const geocodeSearchCache = new Map<string, CacheEntry<any>>();
+let indiaGridCache: CacheEntry<any> | null = null;
 
 const WEATHER_CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutes
+const INDIA_GRID_CACHE_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const GEOCODE_CACHE_TTL_MS = 60 * 60 * 1000; // 60 minutes
 const BENGALURU_LATITUDE = 12.9716;
 const BENGALURU_LONGITUDE = 77.5946;
@@ -30,6 +32,36 @@ const ML_PYTHON_BIN = process.env.ML_PYTHON_BIN || 'python3';
 const RAIN_PREDICT_SCRIPT = path.join(process.cwd(), 'ml', 'scripts', 'predict_rain.py');
 const RAG_PYTHON_BIN = process.env.RAG_PYTHON_BIN || ML_PYTHON_BIN;
 const RAG_QUERY_SCRIPT = path.join(process.cwd(), 'rag', 'scripts', 'query_weather_data.py');
+
+const INDIA_WEATHER_GRID = [
+  { id: 'srinagar', name: 'Srinagar', state: 'Jammu and Kashmir', latitude: 34.0837, longitude: 74.7973 },
+  { id: 'chandigarh', name: 'Chandigarh', state: 'Chandigarh', latitude: 30.7333, longitude: 76.7794 },
+  { id: 'dehradun', name: 'Dehradun', state: 'Uttarakhand', latitude: 30.3165, longitude: 78.0322 },
+  { id: 'new-delhi', name: 'New Delhi', state: 'Delhi', latitude: 28.6139, longitude: 77.2090 },
+  { id: 'jaipur', name: 'Jaipur', state: 'Rajasthan', latitude: 26.9124, longitude: 75.7873 },
+  { id: 'lucknow', name: 'Lucknow', state: 'Uttar Pradesh', latitude: 26.8467, longitude: 80.9462 },
+  { id: 'patna', name: 'Patna', state: 'Bihar', latitude: 25.5941, longitude: 85.1376 },
+  { id: 'gangtok', name: 'Gangtok', state: 'Sikkim', latitude: 27.3389, longitude: 88.6065 },
+  { id: 'guwahati', name: 'Guwahati', state: 'Assam', latitude: 26.1445, longitude: 91.7362 },
+  { id: 'shillong', name: 'Shillong', state: 'Meghalaya', latitude: 25.5788, longitude: 91.8933 },
+  { id: 'imphal', name: 'Imphal', state: 'Manipur', latitude: 24.8170, longitude: 93.9368 },
+  { id: 'ahmedabad', name: 'Ahmedabad', state: 'Gujarat', latitude: 23.0225, longitude: 72.5714 },
+  { id: 'bhopal', name: 'Bhopal', state: 'Madhya Pradesh', latitude: 23.2599, longitude: 77.4126 },
+  { id: 'ranchi', name: 'Ranchi', state: 'Jharkhand', latitude: 23.3441, longitude: 85.3096 },
+  { id: 'kolkata', name: 'Kolkata', state: 'West Bengal', latitude: 22.5726, longitude: 88.3639 },
+  { id: 'bhubaneswar', name: 'Bhubaneswar', state: 'Odisha', latitude: 20.2961, longitude: 85.8245 },
+  { id: 'raipur', name: 'Raipur', state: 'Chhattisgarh', latitude: 21.2514, longitude: 81.6296 },
+  { id: 'mumbai', name: 'Mumbai', state: 'Maharashtra', latitude: 19.0760, longitude: 72.8777 },
+  { id: 'pune', name: 'Pune', state: 'Maharashtra', latitude: 18.5204, longitude: 73.8567 },
+  { id: 'nagpur', name: 'Nagpur', state: 'Maharashtra', latitude: 21.1458, longitude: 79.0882 },
+  { id: 'panaji', name: 'Panaji', state: 'Goa', latitude: 15.4909, longitude: 73.8278 },
+  { id: 'hyderabad', name: 'Hyderabad', state: 'Telangana', latitude: 17.3850, longitude: 78.4867 },
+  { id: 'visakhapatnam', name: 'Visakhapatnam', state: 'Andhra Pradesh', latitude: 17.6868, longitude: 83.2185 },
+  { id: 'bengaluru', name: 'Bengaluru', state: 'Karnataka', latitude: 12.9716, longitude: 77.5946 },
+  { id: 'chennai', name: 'Chennai', state: 'Tamil Nadu', latitude: 13.0827, longitude: 80.2707 },
+  { id: 'kochi', name: 'Kochi', state: 'Kerala', latitude: 9.9312, longitude: 76.2673 },
+  { id: 'thiruvananthapuram', name: 'Thiruvananthapuram', state: 'Kerala', latitude: 8.5241, longitude: 76.9366 }
+] as const;
 
 interface RainPrediction {
   probability: number;
@@ -58,6 +90,28 @@ interface WeatherGPTAnswer {
 }
 
 app.use(express.json());
+
+const configuredCorsOrigins = (process.env.CORS_ORIGIN || '*')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
+app.use((req, res, next) => {
+  const requestOrigin = req.headers.origin;
+  if (configuredCorsOrigins.includes('*')) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  } else if (requestOrigin && configuredCorsOrigins.includes(requestOrigin)) {
+    res.setHeader('Access-Control-Allow-Origin', requestOrigin);
+    res.setHeader('Vary', 'Origin');
+  }
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(204);
+    return;
+  }
+  next();
+});
 
 function isWithinBengaluruModelArea(latitude: number, longitude: number): boolean {
   const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
@@ -563,6 +617,90 @@ app.get('/api/weather', async (req, res) => {
     console.error('[Weather API Unexpected Error]:', error);
     return res.status(500).json({
       error: 'Internal server error while processing weather request',
+      message: error?.message || 'Unknown error'
+    });
+  }
+});
+
+// GET /api/weather-grid
+// A single pair of batched upstream calls powers the nationwide map. This keeps
+// the browser fast and avoids issuing a separate request for every station.
+app.get('/api/weather-grid', async (_req, res) => {
+  const now = Date.now();
+  if (indiaGridCache && now - indiaGridCache.timestamp < INDIA_GRID_CACHE_TTL_MS) {
+    return res.json({ ...indiaGridCache.data, cached: true });
+  }
+
+  try {
+    const latitudes = INDIA_WEATHER_GRID.map(station => station.latitude).join(',');
+    const longitudes = INDIA_WEATHER_GRID.map(station => station.longitude).join(',');
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitudes}&longitude=${longitudes}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_gusts_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max&forecast_days=1&timezone=auto`;
+    const airQualityUrl = `https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${latitudes}&longitude=${longitudes}&current=us_aqi,pm2_5,pm10`;
+
+    const [weatherResult, airQualityResult] = await Promise.allSettled([
+      fetch(weatherUrl, { headers: { 'User-Agent': 'WeatherGPT-App/1.0' } }),
+      fetch(airQualityUrl, { headers: { 'User-Agent': 'WeatherGPT-App/1.0' } })
+    ]);
+
+    if (weatherResult.status !== 'fulfilled' || !weatherResult.value.ok) {
+      const details = weatherResult.status === 'fulfilled'
+        ? `Open-Meteo returned status ${weatherResult.value.status}`
+        : (weatherResult.reason?.message || 'Network error connecting to Open-Meteo');
+      console.error('[India Weather Grid Error]:', details);
+      return res.status(502).json({ error: 'Nationwide weather grid is temporarily unavailable', details });
+    }
+
+    const rawWeather = await weatherResult.value.json();
+    const weatherRows = Array.isArray(rawWeather) ? rawWeather : [rawWeather];
+    let airRows: any[] = [];
+    if (airQualityResult.status === 'fulfilled' && airQualityResult.value.ok) {
+      try {
+        const rawAir = await airQualityResult.value.json();
+        airRows = Array.isArray(rawAir) ? rawAir : [rawAir];
+      } catch (error) {
+        console.warn('[India Air Quality Grid Parse Warning]:', error);
+      }
+    }
+
+    const retrievedAt = new Date().toISOString();
+    const stations = INDIA_WEATHER_GRID.flatMap((station, index) => {
+      const weather = weatherRows[index];
+      if (!weather?.current) return [];
+      const air = airRows[index]?.current;
+      const numberOrNull = (value: unknown) => Number.isFinite(Number(value)) ? Number(value) : null;
+      return [{
+        ...station,
+        temperatureC: numberOrNull(weather.current.temperature_2m),
+        apparentTemperatureC: numberOrNull(weather.current.apparent_temperature),
+        humidityPercent: numberOrNull(weather.current.relative_humidity_2m),
+        currentPrecipitationMm: numberOrNull(weather.current.precipitation),
+        weatherCode: numberOrNull(weather.current.weather_code),
+        windGustKmh: numberOrNull(weather.current.wind_gusts_10m),
+        maxTemperatureC: numberOrNull(weather.daily?.temperature_2m_max?.[0]),
+        minTemperatureC: numberOrNull(weather.daily?.temperature_2m_min?.[0]),
+        rainMm24h: numberOrNull(weather.daily?.precipitation_sum?.[0]),
+        rainProbabilityPercent: numberOrNull(weather.daily?.precipitation_probability_max?.[0]),
+        aqi: numberOrNull(air?.us_aqi),
+        pm25: numberOrNull(air?.pm2_5),
+        pm10: numberOrNull(air?.pm10),
+        timezone: weather.timezone || 'Asia/Kolkata',
+        observedAt: weather.current.time || retrievedAt,
+        isLive: true
+      }];
+    });
+
+    const payload = {
+      stations,
+      source: 'Open-Meteo batch forecast and air-quality APIs',
+      retrievedAt,
+      coverage: `${stations.length} representative locations across India`
+    };
+    indiaGridCache = { data: payload, timestamp: now };
+    return res.json(payload);
+  } catch (error: any) {
+    console.error('[India Weather Grid Unexpected Error]:', error);
+    return res.status(500).json({
+      error: 'Unable to build the nationwide weather grid',
       message: error?.message || 'Unknown error'
     });
   }

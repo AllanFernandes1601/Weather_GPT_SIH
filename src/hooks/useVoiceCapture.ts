@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
+import { Capacitor, PluginListenerHandle } from '@capacitor/core';
+import { SpeechRecognition } from '@capacitor-community/speech-recognition';
 import { resampleAudio, float32ToInt16PCM, calculateRMS } from '../utils/audioProcessing';
 import { voiceTransport, VoiceTransportState, VoiceSessionContext } from '../services/voiceTransport';
 
@@ -25,6 +27,7 @@ export interface UseVoiceCaptureReturn {
   diagnostics: AudioDiagnostics;
   liveState: VoiceTransportState;
   liveTranscript: string;
+  isNativeSpeech: boolean;
   playbackState: VoicePlaybackState;
 }
 
@@ -49,6 +52,7 @@ export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureR
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [liveState, setLiveState] = useState<VoiceTransportState>('idle');
   const [liveTranscript, setLiveTranscript] = useState<string>('');
+  const [isNativeSpeech, setIsNativeSpeech] = useState(false);
   const [playbackState, setPlaybackState] = useState<VoicePlaybackState>('idle');
 
   // References for Web Audio API node lifecycle
@@ -65,6 +69,8 @@ export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureR
   const playbackGenerationRef = useRef(0);
   const turnCompleteRef = useRef(false);
   const voiceContextRef = useRef(context);
+  const nativeSpeechActiveRef = useRef(false);
+  const nativeSpeechListenerRef = useRef<PluginListenerHandle | null>(null);
 
   useEffect(() => {
     voiceContextRef.current = context;
@@ -224,10 +230,24 @@ export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureR
     setVoiceError(null);
   }, []);
 
+  const removeNativeSpeechListener = useCallback(() => {
+    if (nativeSpeechListenerRef.current) {
+      void nativeSpeechListenerRef.current.remove();
+      nativeSpeechListenerRef.current = null;
+    }
+  }, []);
+
   /**
    * Complete teardown of all audio resources and backend transport.
    */
   const stopCapture = useCallback(() => {
+    if (nativeSpeechActiveRef.current) {
+      void SpeechRecognition.stop().catch(() => undefined);
+      nativeSpeechActiveRef.current = false;
+      removeNativeSpeechListener();
+      setIsNativeSpeech(false);
+    }
+
     // 1. Stop all Gemini audio before disconnecting the live session.
     closePlayback();
 
@@ -438,6 +458,61 @@ export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureR
    * Starts microphone capture, Web Audio pipeline, and connects to the Gemini Live session.
    */
   const startCapture = useCallback(async (): Promise<boolean> => {
+    const isAndroidCapacitor = Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'android';
+
+    if (isAndroidCapacitor) {
+      stopCapture();
+      setVoiceError(null);
+      setLiveTranscript('');
+
+      try {
+        const permission = await SpeechRecognition.checkPermissions();
+        const granted = permission.speechRecognition === 'granted';
+        const requestedPermission = granted ? permission : await SpeechRecognition.requestPermissions();
+        if (requestedPermission.speechRecognition !== 'granted') {
+          throw new Error('Speech recognition permission was denied. Allow microphone access for WeatherGPT and try again.');
+        }
+
+        const availability = await SpeechRecognition.available();
+        if (!availability.available) {
+          throw new Error('Speech recognition is unavailable on this Android device.');
+        }
+
+        nativeSpeechListenerRef.current = await SpeechRecognition.addListener('partialResults', (event) => {
+          const transcript = event.matches?.[0]?.trim();
+          if (transcript) setLiveTranscript(transcript);
+        });
+        nativeSpeechActiveRef.current = true;
+        setIsNativeSpeech(true);
+        setIsVoiceActive(true);
+
+        const language = voiceContextRef.current?.language;
+        const languageTag = language === 'hi' ? 'hi-IN' : language === 'kn' ? 'kn-IN' : 'en-IN';
+        const result = await SpeechRecognition.start({
+          language: languageTag,
+          maxResults: 1,
+          partialResults: true,
+          popup: false
+        });
+        const transcript = result.matches?.[0]?.trim();
+        if (transcript) setLiveTranscript(transcript);
+        else setVoiceError('No speech was detected. Please try again.');
+        nativeSpeechActiveRef.current = false;
+        removeNativeSpeechListener();
+        setIsVoiceActive(false);
+        return Boolean(transcript);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Android speech recognition failed. Please try again.';
+        console.error('[Native Speech Recognition Error]:', err);
+        nativeSpeechActiveRef.current = false;
+        removeNativeSpeechListener();
+        setIsNativeSpeech(false);
+        setIsVoiceActive(false);
+        setVoiceError(message);
+        return false;
+      }
+    }
+
     if (typeof window === 'undefined' || !navigator.mediaDevices?.getUserMedia) {
       const unsupportedMsg = 'Microphone audio capture is not supported in this browser environment.';
       setVoiceError(unsupportedMsg);
@@ -549,6 +624,7 @@ export function useVoiceCapture(context?: VoiceSessionContext): UseVoiceCaptureR
     diagnostics,
     liveState,
     liveTranscript,
+    isNativeSpeech,
     playbackState
   };
 }

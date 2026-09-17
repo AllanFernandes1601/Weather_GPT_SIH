@@ -108,6 +108,21 @@
   100% { transform: scale(1.3); opacity: 0; }
 }
 
+@keyframes floatingWeatherBot {
+  0%, 100% { transform: translateY(0) rotate(-0.5deg); }
+  50% { transform: translateY(-6px) rotate(0.5deg); }
+}
+
+@keyframes weatherBotRing {
+  0%, 100% { transform: scale(0.94); opacity: 0.16; }
+  50% { transform: scale(1.09); opacity: 0.3; }
+}
+
+@keyframes floatingAssistantPanel {
+  from { transform: translateY(18px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 /* Animation utility classes */
 .anim-sun-pulse {
   transform-origin: 150px 85px;
@@ -210,6 +225,157 @@
   filter: drop-shadow(0 0 24px rgba(217, 119, 6, 0.5)) drop-shadow(0 0 40px rgba(59, 130, 246, 0.35)) !important;
 }
 
+.floating-weather-bot {
+  animation: floatingWeatherBot 3.6s ease-in-out infinite;
+}
+
+.weather-bot-ring {
+  animation: weatherBotRing 2.8s ease-in-out infinite;
+}
+
+.floating-assistant-panel {
+  transform-origin: bottom right;
+  animation: floatingAssistantPanel 240ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* The floating assistant reuses the real WeatherGPT component with a denser shell. */
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] {
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  overflow: visible;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] > .absolute,
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] .ai-weather-header > div:first-child,
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #voice-cloud-status {
+  display: none !important;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] .ai-weather-header {
+  justify-content: flex-end;
+  margin: 0 0 10px;
+  padding: 0 0 10px;
+  gap: 8px;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] form {
+  border-width: 1px;
+  border-radius: 18px;
+  padding: 8px;
+  gap: 8px;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] form input {
+  font-size: 13px;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] .ai-weather-suggestions {
+  display: none;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #cloud-voice-btn,
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #ask-submit-btn {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  padding: 0 !important;
+  justify-content: center;
+  border-radius: 14px;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #cloud-voice-btn > div:not(:first-child),
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #ask-submit-btn > span:first-child {
+  display: none !important;
+}
+
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #cloud-voice-btn .material-symbols-outlined,
+.floating-assistant-panel #ask-weathergpt-container[data-compact="true"] #ask-submit-btn .material-symbols-outlined {
+  margin: 0;
+  font-size: 21px;
+}
+
+/* Global dark palette. Existing semantic risk colors remain untouched. */
+html.weather-dark {
+  color-scheme: dark;
+  background: #0b1117;
+}
+
+html.weather-dark body,
+html.weather-dark #root {
+  background: #0b1117;
+  color: #f4eee7;
+}
+
+html.weather-dark [class*="bg-[#FAF8F5]"],
+html.weather-dark [class*="bg-[#FFFDF9]"],
+html.weather-dark [class*="bg-[#FCF9F3]"],
+html.weather-dark [class*="bg-[#F7EFE1]"],
+html.weather-dark [class*="bg-[#F5F0E8]"],
+html.weather-dark [class*="bg-[#F8F4EE]"],
+html.weather-dark [class*="bg-[#F4F8FA]"],
+html.weather-dark [class*="bg-[#E7F1F3]"],
+html.weather-dark [class*="bg-[#EFE7DB]"],
+html.weather-dark [class~="bg-white"],
+html.weather-dark [class*="bg-white/"] {
+  background-color: #121a22 !important;
+}
+
+html.weather-dark [class*="from-[#FFFDF9]"],
+html.weather-dark [class*="from-[#FFF9EE]"],
+html.weather-dark [class*="from-[#FAF8F5]"],
+html.weather-dark [class*="from-[#FCF9F3]"] {
+  background-image: linear-gradient(135deg, #151e27, #101820) !important;
+}
+
+html.weather-dark [class*="text-[#1C1814]"],
+html.weather-dark [class*="text-[#2B241E]"],
+html.weather-dark [class*="text-[#211B16]"] {
+  color: #f6f1eb !important;
+}
+
+html.weather-dark [class*="text-[#6E645A]"],
+html.weather-dark [class*="text-[#76695E]"],
+html.weather-dark [class*="text-[#8E9197]"],
+html.weather-dark [class*="text-[#8E7965]"] {
+  color: #b8c1ca !important;
+}
+
+html.weather-dark [class*="border-[#E5DCCF]"],
+html.weather-dark [class*="border-[#E8DED2]"],
+html.weather-dark [class*="border-[#E2D4C3]"],
+html.weather-dark [class*="border-[#DCCFBE]"] {
+  border-color: rgba(148, 163, 184, 0.24) !important;
+}
+
+html.weather-dark input,
+html.weather-dark select,
+html.weather-dark textarea {
+  color: #f6f1eb;
+}
+
+html.weather-dark input::placeholder,
+html.weather-dark textarea::placeholder {
+  color: #8190a0 !important;
+}
+
+html.weather-dark .floating-assistant-panel,
+html.weather-dark .floating-assistant-panel header {
+  background: #101820 !important;
+  background-image: none !important;
+  color: #f6f1eb !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .floating-weather-bot,
+  .weather-bot-ring,
+  .floating-assistant-panel {
+    animation: none;
+  }
+}
+
 /* Hide scrollbar for clean horizontal scrolls */
 .no-scrollbar::-webkit-scrollbar {
   display: none;
@@ -217,6 +383,47 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Disaster map motion remains lightweight and fully local. */
+@keyframes mapRainDrift {
+  0%, 100% { transform: translate3d(-4px, -2px, 0) scale(0.98); opacity: 0.74; }
+  50% { transform: translate3d(5px, 3px, 0) scale(1.04); opacity: 0.96; }
+}
+
+@keyframes mapMarkerRing {
+  0% { transform: scale(0.72); opacity: 0.95; }
+  100% { transform: scale(1.65); opacity: 0; }
+}
+
+@keyframes mapCycloneFlow {
+  to { stroke-dashoffset: -30; }
+}
+
+.map-rain-cell {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mapRainDrift 4.8s ease-in-out infinite;
+}
+
+.map-marker-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: mapMarkerRing 2.2s ease-out infinite;
+}
+
+.map-cyclone-track {
+  animation: mapCycloneFlow 2.4s linear infinite;
+}
+
+.map-flood-zone {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: riskGaugeBreathe 3s ease-in-out infinite;
+}
+
+html.weather-dark .disaster-map-shell {
+  border-color: rgba(125, 211, 252, 0.18) !important;
 }
 
 /* Risk intelligence motion: live data breathes; simulator motion is input-driven only. */
@@ -288,6 +495,12 @@
   .risk-gauge-live-highlight,
   .risk-slider-pulse,
   .risk-connection-pulse {
+    animation: none;
+  }
+  .map-rain-cell,
+  .map-marker-ring,
+  .map-cyclone-track,
+  .map-flood-zone {
     animation: none;
   }
 }
