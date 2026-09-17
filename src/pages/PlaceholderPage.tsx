@@ -1,5 +1,6 @@
 import React from 'react';
 import { NavTab, LocationData } from '../types';
+import { ACTIVE_ALERT } from '../data/mockWeatherData';
 import { SafetyHub } from '../components/SafetyHub';
 
 interface PlaceholderPageProps {
@@ -12,7 +13,8 @@ interface PlaceholderPageProps {
 export const PlaceholderPage: React.FC<PlaceholderPageProps> = ({
   tab,
   onBackToHome,
-  location
+  location,
+  onOpenAlertModal
 }) => {
   const getTabDetails = () => {
     switch (tab) {
