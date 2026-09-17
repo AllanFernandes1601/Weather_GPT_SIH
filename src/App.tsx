@@ -57,7 +57,6 @@ export default function App() {
     diagnostics,
     liveState,
     liveTranscript,
-    isNativeSpeech,
     playbackState
   } = useVoiceCapture(voiceContext);
 
@@ -261,7 +260,6 @@ export default function App() {
                   diagnostics={diagnostics}
                   liveState={liveState}
                   liveTranscript={liveTranscript}
-                  isNativeSpeech={isNativeSpeech}
                   playbackState={playbackState}
                   selectedLanguage={selectedLanguage}
                   onLanguageChange={setSelectedLanguage}
@@ -329,7 +327,6 @@ export default function App() {
           diagnostics={diagnostics}
           liveState={liveState}
           liveTranscript={liveTranscript}
-          isNativeSpeech={isNativeSpeech}
           playbackState={playbackState}
           selectedLanguage={selectedLanguage}
           onLanguageChange={setSelectedLanguage}

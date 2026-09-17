@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { SUGGESTED_QUESTIONS } from '../data/mockWeatherData';
 import { HourlyForecastItem, LocationData, SuggestedQuestion } from '../types';
 import { aiWeatherService, AIResponse } from '../services/aiWeatherService';
@@ -19,7 +19,6 @@ interface AIWeatherInputProps {
   diagnostics?: AudioDiagnostics;
   liveState?: VoiceTransportState;
   liveTranscript?: string;
-  isNativeSpeech?: boolean;
   playbackState?: VoicePlaybackState;
   selectedLanguage: LanguageId;
   onLanguageChange: (language: LanguageId) => void;
@@ -39,7 +38,6 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   diagnostics,
   liveState,
   liveTranscript,
-  isNativeSpeech = false,
   playbackState = 'idle',
   selectedLanguage,
   onLanguageChange,
@@ -49,12 +47,6 @@ export const AIWeatherInput: React.FC<AIWeatherInputProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [activeResponse, setActiveResponse] = useState<AIResponse | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
-
-  useEffect(() => {
-    if (isNativeSpeech && liveTranscript) {
-      setQuery(liveTranscript);
-    }
-  }, [isNativeSpeech, liveTranscript]);
 
   const handleAsk = async (textToAsk?: string) => {
     const questionText = textToAsk || query;

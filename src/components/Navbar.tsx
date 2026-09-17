@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { NavTab, LocationData } from '../types';
-import { disableWeatherNotifications, enableWeatherNotifications } from '../services/notificationService';
 
 interface NavbarProps {
   currentTab: NavTab;
@@ -24,28 +23,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleDarkMode
 }) => {
   const [showNotifications, setShowNotifications] = useState(false);
-  const [notificationsEnabled, setNotificationsEnabled] = useState(false);
-  const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
-
-  const handleNotificationToggle = async () => {
-    setNotificationMessage(null);
-    if (notificationsEnabled) {
-      await disableWeatherNotifications();
-      setNotificationsEnabled(false);
-      return;
-    }
-
-    try {
-      const enabled = await enableWeatherNotifications();
-      setNotificationsEnabled(enabled);
-      setNotificationMessage(enabled
-        ? 'Weather alerts enabled on this device.'
-        : 'Native weather notifications are available in the Android app.');
-    } catch (error) {
-      console.error('[Notification Permission Error]:', error);
-      setNotificationMessage('Notification permission could not be enabled.');
-    }
-  };
 
   return (
     <header className="fixed top-0 inset-x-0 z-50 bg-[#FFFDF9]/95 backdrop-blur-xl border-b border-[#E5DCCF]/60 shadow-[0_1px_12px_rgba(46,40,35,0.04)] transition-all">
@@ -236,16 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </span>
                 </div>
                 <div className="mt-3 text-center">
-                  <button
-                    type="button"
-                    onClick={handleNotificationToggle}
-                    className="text-[11px] font-bold text-[#B45309] hover:underline"
-                  >
-                    {notificationsEnabled ? 'Disable weather notifications' : 'Enable weather notifications'}
-                  </button>
-                  {notificationMessage && (
-                    <p className="mt-1 text-[11px] text-[#6E645A]">{notificationMessage}</p>
-                  )}
+                  <span className="text-[11px] text-[#8E9197]">Demo weather notification feed</span>
                 </div>
               </div>
             )}

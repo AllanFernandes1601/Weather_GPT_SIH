@@ -19,11 +19,6 @@
     "deploy:prepare": "npm run rag:test && npm run rag:evaluate && npm run lint && npm run build && npm run deploy:check"
   },
   "dependencies": {
-    "@capacitor/android": "^8.5.2",
-    "@capacitor-community/speech-recognition": "^7.0.1",
-    "@capacitor/cli": "^8.5.2",
-    "@capacitor/core": "^8.5.2",
-    "@capacitor/local-notifications": "^8.3.1",
     "@google/genai": "^2.4.0",
     "@tailwindcss/vite": "^4.1.14",
     "@vitejs/plugin-react": "^5.0.4",
